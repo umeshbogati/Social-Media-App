@@ -27,7 +27,7 @@ export const sendSuccess = (
   data: any,
   statusCode: number = HTTP_STATUS.OK,
 ) => {
-  return res.status(statusCode).json(data);
+  return res.status(statusCode).json({ data });
 };
 
 /**

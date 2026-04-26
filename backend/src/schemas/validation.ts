@@ -1,9 +1,9 @@
 export const validateRegister = (data: any) => {
   const errors: string[] = [];
-  if (!data.username || data.username.length < 10)
-    errors.push("Username must be at least 10 characters");
-  if (!data.name || data.name.length < 10)
-    errors.push("Name must be at least 10 characters");
+  if (!data.username || data.username.length < 3)
+    errors.push("Username must be at least 3 characters");
+  if (!data.name || data.name.length < 2)
+    errors.push("Name must be at least 2 characters");
   if (!data.email || !data.email.includes("@"))
     errors.push("Valid email required");
   if (!data.password || data.password.length < 8)

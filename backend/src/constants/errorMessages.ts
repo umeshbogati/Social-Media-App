@@ -6,8 +6,8 @@ export const ERROR_MESSAGES = {
   USER_ALREADY_EXISTS: "User already exists",
   INVALID_EMAIL: "Valid email required",
   WEAK_PASSWORD: "Password must be at least 8 characters",
-  WEAK_USERNAME: "Username must be at least 10 characters",
-  WEAK_NAME: "Name must be at least 10 characters",
+  WEAK_USERNAME: "Username must be at least 3 characters",
+  WEAK_NAME: "Name must be at least 2 characters",
 
   // Token Errors
   NO_TOKEN_PROVIDED: "No token provided",

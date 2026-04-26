@@ -18,8 +18,8 @@ const sampleUsers = [
     role: "user" as const,
   },
   {
-    username: "sachin_kc",
-    name: "Sachin KC",
+    username: "sachin_singh_kc",
+    name: "Sachin Singh KC",
     email: "sachin@example.com",
     password: "sachin123!", // This will be hashed
     role: "admin" as const,
@@ -91,6 +91,21 @@ const seedDatabase = async () => {
     process.exit(1); // Exit with error code
   }
 };
+
+// Utility to delete users by email
+const deleteUserByEmail = async (email: string) => {
+  await connectDB();
+  const result = await User.deleteMany({ email });
+  console.log(`Deleted ${result.deletedCount} user(s) with email: ${email}`);
+};
+
+// Run this utility before seeding
+(async () => {
+  await deleteUserByEmail("sachin@example.com");
+  // Uncomment the next line to run the full seed after deletion
+  // await seedDatabase();
+  process.exit();
+})();
 
 // Run the seeding function
 seedDatabase();
