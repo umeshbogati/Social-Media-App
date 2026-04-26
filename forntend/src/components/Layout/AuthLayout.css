@@ -1,0 +1,95 @@
+/* filepath: src/components/Layout/AuthLayout.css */
+.auth-layout {
+  min-height: 100vh;
+  display: flex;
+}
+
+.auth-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  background-color: #fff;
+}
+
+.auth-brand {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.auth-title {
+  font-size: 2.5rem;
+  color: #1877f2;
+  margin: 0 0 10px 0;
+}
+
+.auth-subtitle {
+  color: #65676b;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: #fff;
+}
+
+.auth-card-title {
+  font-size: 1.5rem;
+  color: #050505;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+.auth-footer {
+  margin-top: 20px;
+  text-align: center;
+  color: #65676b;
+}
+
+.auth-footer a {
+  color: #1877f2;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+.auth-background {
+  flex: 1;
+  background: linear-gradient(135deg, #1877f2 0%, #45bd62 100%);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.auth-bg-content {
+  color: #fff;
+  text-align: center;
+  max-width: 400px;
+}
+
+.auth-bg-content h2 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+}
+
+.auth-bg-content p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+@media (min-width: 768px) {
+  .auth-background {
+    display: flex;
+  }
+}
