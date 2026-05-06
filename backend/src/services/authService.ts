@@ -1,31 +1,118 @@
 import User from "../models/user";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { IRegisterRequest, IAuthRequest, IUser } from "../interfaces";
+import jwt, { SignOptions } from "jsonwebtoken";
+import { IRegisterRequest, IAuthRequest } from "../interfaces";
+import { JWT_SECRET, JWT_REFRESH_SECRET } from "../config/env";
+
+/* ================= TOKEN OPTIONS ================= */
+
+const accessOptions: SignOptions = {
+  expiresIn: "3h",
+};
+
+const refreshOptions: SignOptions = {
+  expiresIn: "7d",
+};
+
+/* ================= AUTH SERVICE ================= */
 
 export class AuthService {
-  static async register(data: IRegisterRequest): Promise<IUser> {
+  /* ================= REGISTER ================= */
+  static async register(data: IRegisterRequest) {
+    const existingUser = await User.findOne({ email: data.email });
+
+    if (existingUser) {
+      throw new Error("Email already exists");
+    }
+
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const user = new User({ ...data, password: hashedPassword });
+
+    const user = await User.create({
+      ...data,
+      password: hashedPassword,
+      role: "user",
+    });
+
+    const accessToken = jwt.sign(
+      {
+        id: user._id.toString(),
+        role: user.role,
+      },
+      JWT_SECRET!,
+      accessOptions,
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user._id.toString() },
+      JWT_REFRESH_SECRET!,
+      refreshOptions,
+    );
+
+    user.refreshToken = refreshToken;
     await user.save();
-    return user.toObject();
+
+    // ✅ BEST PRACTICE: use select instead of delete
+    const safeUser = await User.findById(user._id).select(
+      "-password -refreshToken",
+    );
+
+    return {
+      user: {
+        ...safeUser?.toObject(),
+        _id: user._id.toString(),
+      },
+      accessToken,
+      refreshToken,
+    };
   }
 
-  static async login(
-    data: IAuthRequest,
-  ): Promise<{ user: IUser; token: string; expiresIn: string }> {
+  /* ================= LOGIN ================= */
+  static async login(data: IAuthRequest) {
     const user = await User.findOne({ email: data.email });
-    if (!user) throw new Error("User not found");
 
-    const isValid = await bcrypt.compare(data.password, user.password);
-    if (!isValid) throw new Error("Wrong password");
+    if (!user || !user.password) {
+      throw new Error("Invalid credentials");
+    }
 
-    const expiresIn = process.env.JWT_EXPIRES_IN || "3d";
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
-      expiresIn,
-    } as jwt.SignOptions);
+    const isValid = await bcrypt.compare(
+      data.password,
+      user.password,
+    );
 
-    const { password, ...userData } = user.toObject();
-    return { user: userData, token, expiresIn };
+    if (!isValid) {
+      throw new Error("Invalid credentials");
+    }
+
+    const accessToken = jwt.sign(
+      {
+        id: user._id.toString(),
+        role: user.role,
+      },
+      JWT_SECRET!,
+      accessOptions,
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user._id.toString() },
+      JWT_REFRESH_SECRET!,
+      refreshOptions,
+    );
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    // ✅ clean user response
+    const safeUser = await User.findById(user._id).select(
+      "-password -refreshToken",
+    );
+
+    return {
+      user: {
+        ...safeUser?.toObject(),
+        _id: user._id.toString(),
+      },
+      accessToken,
+      refreshToken,
+    };
   }
 }

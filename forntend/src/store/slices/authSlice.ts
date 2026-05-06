@@ -1,5 +1,5 @@
-// filepath: src/store/slices/authSlice.ts
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice} from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 
 interface User {
   _id: string;
@@ -18,8 +18,8 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem("token"),
-  isAuthenticated: !!localStorage.getItem("token"),
+  token: null,
+  isAuthenticated: false,
   isLoading: false,
   error: null,
 };
@@ -28,6 +28,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    /* ================= LOGIN ================= */
     setCredentials: (
       state,
       action: PayloadAction<{ user: User; token: string }>,
@@ -35,26 +36,54 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
-      localStorage.setItem("token", action.payload.token);
+      state.error = null;
     },
+
+    /* ================= SET USER ================= */
     setUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
     },
+
+    /* ================= LOADING ================= */
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
+
+    /* ================= ERROR ================= */
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
+
+    /* ================= HYDRATE (IMPORTANT) ================= */
+    hydrateAuth: (
+      state,
+      action: PayloadAction<{
+        user: User;
+        token: string;
+      }>,
+    ) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+    },
+
+    /* ================= LOGOUT ================= */
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      localStorage.removeItem("token");
+      state.error = null;
     },
   },
 });
 
-export const { setCredentials, setUser, setLoading, setError, logout } =
-  authSlice.actions;
+export const {
+  setCredentials,
+  setUser,
+  setLoading,
+  setError,
+  logout,
+  hydrateAuth,
+} = authSlice.actions;
+
 export default authSlice.reducer;

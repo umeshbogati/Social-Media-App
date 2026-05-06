@@ -1,7 +1,6 @@
-// filepath: src/components/Layout/MainLayout.tsx
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
+import { Box } from "@mui/material";
 import { Header } from "../Header";
-import "./MainLayout.css";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -9,12 +8,38 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   return (
-    <div className="main-layout">
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundColor: "#f5f6fa",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* HEADER */}
       <Header />
-      <main className="main-content">
-        <div className="container">{children}</div>
-      </main>
-    </div>
+
+      {/* MAIN CONTENT */}
+      <Box
+        component="main"
+        sx={{
+          flex: 1,
+          display: "flex",
+          justifyContent: "center",
+          px: 2,
+          py: 3,
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: "900px",
+          }}
+        >
+          {children}
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

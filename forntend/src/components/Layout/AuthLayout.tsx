@@ -1,7 +1,6 @@
-// filepath: src/components/Layout/AuthLayout.tsx
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import "./AuthLayout.css";
+import { Box, Paper, Typography, Button } from "@mui/material";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -10,39 +9,85 @@ interface AuthLayoutProps {
 
 export const AuthLayout = ({ children, title }: AuthLayoutProps) => {
   return (
-    <div className="auth-layout">
-      <div className="auth-container">
-        <div className="auth-brand">
-          <h1 className="auth-title">Social Media App</h1>
-          <p className="auth-subtitle">
-            Connect with friends and share your moments
-          </p>
-        </div>
-        <div className="auth-card">
-          <h2 className="auth-card-title">{title}</h2>
-          {children}
-        </div>
-        <div className="auth-footer">
-          <p>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background:
+          "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
+        px: 2,
+      }}
+    >
+      <Paper
+        elevation={12}
+        sx={{
+          width: "100%",
+          maxWidth: 420,
+          p: 4,
+          borderRadius: 4,
+          textAlign: "center",
+        }}
+      >
+        {/* BRAND */}
+        <Typography
+          variant="h5"
+          fontWeight="bold"
+          gutterBottom
+          color="primary"
+        >
+          Social Media App
+        </Typography>
+
+        <Typography variant="body2" color="text.secondary" mb={3}>
+          Connect with friends and share your moments
+        </Typography>
+
+        {/* TITLE */}
+        <Typography variant="h6" fontWeight={600} mb={2}>
+          {title}
+        </Typography>
+
+        {/* FORM */}
+        <Box>{children}</Box>
+
+        {/* FOOTER */}
+        <Box mt={3}>
+          <Typography variant="body2">
             {title === "Login" ? (
               <>
-                Don't have an account? <Link to="/register">Register</Link>
+                Don't have an account?{" "}
+                <Link
+                  to="/register"
+                  style={{
+                    textDecoration: "none",
+                    fontWeight: 600,
+                    color: "#1976d2",
+                  }}
+                >
+                  Register
+                </Link>
               </>
             ) : (
               <>
-                Already have an account? <Link to="/login">Log in</Link>
+                Already have an account?{" "}
+                <Link
+                  to="/login"
+                  style={{
+                    textDecoration: "none",
+                    fontWeight: 600,
+                    color: "#1976d2",
+                  }}
+                >
+                  Login
+                </Link>
               </>
             )}
-          </p>
-        </div>
-      </div>
-      {/* <div className="auth-background">
-        <div className="auth-bg-content">
-          <h2>Welcome to Our Community</h2>
-          <p>Share photos, connect with friends, and discover new content.</p>
-        </div>
-      </div> */}
-    </div>
+          </Typography>
+        </Box>
+      </Paper>
+    </Box>
   );
 };
 

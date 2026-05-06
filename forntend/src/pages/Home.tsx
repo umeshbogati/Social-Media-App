@@ -1,13 +1,18 @@
-import { useState, useEffect, useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+
 import {
   getPosts,
   createPost,
   likePost,
   deletePost,
+  updatePost,
+  addComment,
   type Post,
 } from "../api/posts";
+
 import { MainLayout } from "../components/Layout";
+
 import {
   TextField,
   Button,
@@ -18,92 +23,183 @@ import {
   IconButton,
   Box,
   CircularProgress,
+  Divider,
 } from "@mui/material";
-import { Favorite, Delete, AddPhotoAlternate } from "@mui/icons-material";
+
+import {
+  Favorite,
+  FavoriteBorder,
+  Delete,
+  Edit,
+  AddPhotoAlternate,
+} from "@mui/icons-material";
+
+/* ================= COMPONENT ================= */
 
 const Home = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
+
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [page, setPage] = useState(1);
 
-  const fetchPosts = async () => {
-    try {
-      const newPosts = await getPosts(page);
-      if (page === 1) {
-        setPosts(newPosts || []);
-      } else {
-        setPosts((prevPosts) => [...prevPosts, ...(newPosts || [])]);
-      }
-    } catch (err) {
-      console.error("Error fetching posts:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
 
+  const [showComments, setShowComments] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState("");
+
+  /* ================= FETCH POSTS ================= */
+const fetchPosts = async () => {
+  try {
+    const newPosts = await getPosts(page);
+
+    // const newPosts: Post[] = Array.isArray(res?.data)
+    //   ? res.data
+    //   : [];
+
+    setPosts((prev) =>
+      page === 1 ? newPosts : [...prev, ...newPosts],
+    );
+  } catch (err) {
+    console.error("Fetch posts error:", err);
+    setPosts([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  /* IMPORTANT: call fetch */
   useEffect(() => {
     fetchPosts();
   }, [page]);
 
+  /* ================= CREATE POST ================= */
+
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!description.trim()) return;
+
     setSubmitting(true);
+
     try {
-      await createPost({ description, image: image || undefined });
+      await createPost({
+        description,
+        image: image || undefined,
+      });
+
       setDescription("");
       setImage(null);
       setPage(1);
       fetchPosts();
     } catch (err) {
-      console.error("Error creating post:", err);
+      console.error(err);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleLike = async (postId: string) => {
-    const post = posts.find((p) => p._id === postId);
-    if (!post) return;
+  /* ================= LIKE ================= */
 
-    const isLiked = post.likes.includes(user?._id || "");
+  const handleLike = async (postId: string) => {
+    if (!user) return;
 
     try {
       await likePost(postId);
-      setPosts(
-        posts.map((p) =>
-          p._id === postId
-            ? {
-                ...p,
-                likes: isLiked
-                  ? p.likes.filter((id) => id !== user?._id)
-                  : [...p.likes, user?._id || ""],
-              }
-            : p,
-        ),
+
+      setPosts((prev) =>
+        prev.map((post) => {
+          if (post._id !== postId) return post;
+
+          const isLiked = post.likes.includes(user._id);
+
+          return {
+            ...post,
+            likes: isLiked
+              ? post.likes.filter((id) => id !== user._id)
+              : [...post.likes, user._id],
+          };
+        })
       );
     } catch (err) {
-      console.error("Error toggling like:", err);
+      console.error(err);
     }
   };
 
+  /* ================= DELETE ================= */
+
   const handleDelete = async (postId: string) => {
+    if (!window.confirm("Delete this post?")) return;
+
     try {
       await deletePost(postId);
-      setPosts(posts.filter((post) => post._id !== postId));
+
+      setPosts((prev) =>
+        prev.filter((post) => post._id !== postId)
+      );
     } catch (err) {
-      console.error("Error deleting post:", err);
+      console.error(err);
     }
   };
+
+  /* ================= UPDATE ================= */
+
+  const handleUpdatePost = async (postId: string) => {
+    try {
+      const updated = await updatePost(postId, {
+        description: editText,
+      });
+
+      setPosts((prev) =>
+        prev.map((post) =>
+          post._id === postId ? updated : post
+        )
+      );
+
+      setEditingPostId(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  /* ================= COMMENT ================= */
+
+  const handleAddComment = async (postId: string) => {
+    if (!commentText.trim()) return;
+
+    try {
+      const newComment = await addComment(postId, commentText);
+
+      setPosts((prev) =>
+        prev.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                comments: [...(post.comments || []), newComment],
+              }
+            : post
+        )
+      );
+
+      setCommentText("");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  /* ================= UI ================= */
 
   return (
     <MainLayout>
-      <Box sx={{ maxWidth: 600, mx: "auto" }}>
-        {/* Create Post Card */}
-        <Card sx={{ mb: 3, p: 2 }}>
+      <Box sx={{ maxWidth: 600, mx: "auto", py: 2 }}>
+
+        {/* CREATE POST */}
+        <Card sx={{ mb: 3, p: 2, borderRadius: 3 }}>
           <form onSubmit={handleCreatePost}>
             <TextField
               fullWidth
@@ -112,100 +208,179 @@ const Home = () => {
               placeholder="What's on your mind?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              required
               sx={{ mb: 2 }}
             />
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
+
+            <Box display="flex" justifyContent="space-between">
               <label>
                 <input
                   type="file"
-                  accept="image/*"
                   hidden
-                  onChange={(e) => setImage(e.target.files?.[0] || null)}
+                  accept="image/*"
+                  onChange={(e) =>
+                    setImage(e.target.files?.[0] || null)
+                  }
                 />
                 <IconButton component="span">
                   <AddPhotoAlternate />
                 </IconButton>
               </label>
-              <Button type="submit" variant="contained" disabled={submitting}>
+
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={submitting}
+              >
                 {submitting ? "Posting..." : "Post"}
               </Button>
             </Box>
-            {image && <Typography variant="caption">{image.name}</Typography>}
           </form>
         </Card>
 
-        {/* Posts Feed */}
+        {/* POSTS */}
         {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+          <Box textAlign="center" py={5}>
             <CircularProgress />
           </Box>
+        ) : posts.length === 0 ? (
+          <Typography textAlign="center">
+            No posts yet .
+          </Typography>
         ) : (
-          posts.map((post) => (
-            <Card key={post._id} sx={{ mb: 2 }}>
-              <CardContent>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mb: 1,
-                  }}
-                >
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    {post.userId?.username || "Unknown"}
-                  </Typography>
-                  {post.userId?._id === user?._id && (
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDelete(post._id)}
-                      size="small"
-                    >
-                      <Delete />
-                    </IconButton>
+          posts.map((post) => {
+            const isLiked = user
+              ? post.likes.includes(user._id)
+              : false;
+
+            const isOwner = post.user?._id === user?._id;
+
+            return (
+              <Card key={post._id} sx={{ mb: 2, borderRadius: 3 }}>
+                <CardContent>
+
+                  {/* HEADER */}
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography fontWeight="bold">
+                      {post.user?.username}
+                    </Typography>
+
+                    {isOwner && (
+                      <Box>
+                        <IconButton
+                          onClick={() => {
+                            setEditingPostId(post._id);
+                            setEditText(post.description);
+                          }}
+                        >
+                          <Edit />
+                        </IconButton>
+
+                        <IconButton
+                          color="error"
+                          onClick={() => handleDelete(post._id)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Box>
+                    )}
+                  </Box>
+
+                  {/* DESCRIPTION */}
+                  {editingPostId === post._id ? (
+                    <>
+                      <TextField
+                        fullWidth
+                        value={editText}
+                        onChange={(e) =>
+                          setEditText(e.target.value)
+                        }
+                      />
+
+                      <Box mt={1}>
+                        <Button onClick={() => handleUpdatePost(post._id)}>
+                          Save
+                        </Button>
+                        <Button onClick={() => setEditingPostId(null)}>
+                          Cancel
+                        </Button>
+                      </Box>
+                    </>
+                  ) : (
+                    <Typography sx={{ my: 2 }}>
+                      {post.description}
+                    </Typography>
                   )}
-                </Box>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  {post.description}
-                </Typography>
-                {post.image && (
-                  <CardMedia
-                    component="img"
-                    image={post.image}
-                    alt="Post"
-                    sx={{ borderRadius: 1, mb: 2 }}
-                  />
-                )}
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <IconButton
-                    color={
-                      post.likes.includes(user?._id || "") ? "error" : "default"
-                    }
-                    onClick={() => handleLike(post._id)}
-                  >
-                    <Favorite />
-                  </IconButton>
-                  <Typography variant="body2" color="text.secondary">
-                    {post.likes.length} likes
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          ))
+
+                  {/* IMAGE */}
+                  {post.image && (
+                    <CardMedia component="img" image={post.image} />
+                  )}
+
+                  <Divider sx={{ my: 1 }} />
+
+                  {/* ACTIONS */}
+                  <Box display="flex" gap={1}>
+                    <IconButton onClick={() => handleLike(post._id)}>
+                      {isLiked ? (
+                        <Favorite color="error" />
+                      ) : (
+                        <FavoriteBorder />
+                      )}
+                    </IconButton>
+
+                    <Typography>{post.likes.length}</Typography>
+
+                    <Button
+                      onClick={() =>
+                        setShowComments(
+                          showComments === post._id
+                            ? null
+                            : post._id
+                        )
+                      }
+                    >
+                      Comments
+                    </Button>
+                  </Box>
+
+                  {/* COMMENTS */}
+                  {showComments === post._id && (
+                    <Box mt={2}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Write comment..."
+                        value={commentText}
+                        onChange={(e) =>
+                          setCommentText(e.target.value)
+                        }
+                      />
+
+                      <Button onClick={() => handleAddComment(post._id)}>
+                        Post
+                      </Button>
+
+                      {(post.comments || []).map((c, i) => (
+                        <Typography key={i}>
+                          <b>{c.user?.username}</b>: {c.text}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
+
+                </CardContent>
+              </Card>
+            );
+          })
         )}
 
-        {/* Load More */}
-        <Box sx={{ textAlign: "center", py: 2 }}>
-          <Button variant="outlined" onClick={() => setPage(page + 1)}>
+        {/* LOAD MORE */}
+        <Box textAlign="center" py={3}>
+          <Button onClick={() => setPage((p) => p + 1)}>
             Load More
           </Button>
         </Box>
+
       </Box>
     </MainLayout>
   );

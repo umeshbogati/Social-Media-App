@@ -1,10 +1,22 @@
 import express from "express";
-import { verifyToken } from "../middleware/authmiddleware";
+import { protect } from "../middleware/authmiddleware";
 import { upload } from "../utils/multer";
-import { uploadProfilePicture } from "../controllers/userController";
+import {
+  updateProfile,
+  getProfile,
+} from "../controllers/userController";
 
 const router = express.Router();
 
-router.put("/profile", verifyToken, upload.single("image"), uploadProfilePicture);
+/* ================= GET USER PROFILE ================= */
+router.get("/me", protect, getProfile);
+
+/* ================= UPDATE PROFILE ================= */
+router.put(
+  "/update",
+  protect,
+  upload.single("image"),
+  updateProfile,
+);
 
 export default router;

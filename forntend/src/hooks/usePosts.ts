@@ -1,26 +1,25 @@
-// filepath: src/hooks/usePosts.ts
 import { useState, useCallback } from "react";
 import {
   getPosts,
   createPost,
   likePost,
   deletePost,
-  unlikePost,
-  commentPost,
   type Post,
 } from "../api/posts";
-import { setPosts } from "../store/slices";
 
 export const usePosts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /* ================= FETCH POSTS ================= */
   const fetchPosts = useCallback(async (page = 1) => {
     setLoading(true);
     setError(null);
+
     try {
       const data = await getPosts(page);
+
       if (page === 1) {
         setPosts(data);
       } else {
@@ -34,9 +33,11 @@ export const usePosts = () => {
     }
   }, []);
 
+  /* ================= CREATE POST ================= */
   const addPost = useCallback(
     async (description: string, image?: File) => {
       setLoading(true);
+
       try {
         await createPost({ description, image });
         await fetchPosts(1);
@@ -50,28 +51,50 @@ export const usePosts = () => {
     [fetchPosts],
   );
 
-  const like = useCallback(async (postId: string) => {
+  /* ================= LIKE / UNLIKE TOGGLE ================= */
+  const like = useCallback(async (postId: string, userId: string) => {
     try {
       await likePost(postId);
+
       setPosts((prev) =>
-        prev.map((post) =>
-          post._id === postId ? { ...post, likes: [...post.likes, ""] } : post,
-        ),
+        prev.map((post) => {
+          if (post._id !== postId) return post;
+
+          const isLiked = post.likes.includes(userId);
+
+          return {
+            ...post,
+            likes: isLiked
+              ? post.likes.filter((id) => id !== userId) // UNLIKE
+              : [...post.likes, userId], // LIKE
+          };
+        }),
       );
     } catch (err) {
       console.error(err);
     }
   }, []);
 
+  /* ================= DELETE POST ================= */
   const remove = useCallback(async (postId: string) => {
     try {
       await deletePost(postId);
-      setPosts((prev) => prev.filter((post) => post._id !== postId));
+
+      setPosts((prev) =>
+        prev.filter((post) => post._id !== postId),
+      );
     } catch (err) {
       console.error(err);
     }
   }, []);
 
-  return { posts, loading, error, fetchPosts, addPost, like, remove };
+  return {
+    posts,
+    loading,
+    error,
+    fetchPosts,
+    addPost,
+    like,
+    remove,
+  };
 };
-//  make unlike code.

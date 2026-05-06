@@ -25,9 +25,13 @@ export const sendError = (
 export const sendSuccess = (
   res: Response,
   data: any,
+  status = 200,
   statusCode: number = HTTP_STATUS.OK,
 ) => {
-  return res.status(statusCode).json({ data });
+  return res.status(statusCode).json({
+    success: true,
+    data,
+  });
 };
 
 /**

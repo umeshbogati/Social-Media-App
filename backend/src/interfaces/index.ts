@@ -1,33 +1,62 @@
+/* ================= USER ================= */
+
 export interface IUser {
-  _id?: string | any; // Allow ObjectId
+  _id: string;
   username: string;
   name: string;
   email: string;
-  password?: string; // Optional for responses
+  password?: string;
+
   address?: string | null;
   phone?: string | null;
   profilePicture?: string | null;
+
   role: "user" | "admin";
-  timestamp?: Date;
-  __v?: number; // Mongoose version key
+  refreshToken?: string | null;
+
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface IPost {
-  _id?: string | any;
-  userId: string | any;
-  description: string;
-  image?: string | null | undefined;
-  likes: any[];
-  comments: any[];
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+/* ================= COMMENT ================= */
 
 export interface IComment {
-  userId: string | any;
+  _id: string;
   text: string;
-  _id?: string | any;
+
+  user: {
+    _id: string;
+    username: string;
+    profilePicture?: string | null;
+  };
+
+  createdAt: string;
 }
+
+/* ================= POST ================= */
+
+export interface IPost {
+  _id: string;
+
+  user: {
+    _id: string;
+    username: string;
+    name?: string;
+    profilePicture?: string | null;
+  };
+
+  description: string;
+  image?: string | null;
+
+  likes: string[];
+
+  comments: IComment[];
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+/* ================= AUTH ================= */
 
 export interface IAuthRequest {
   email: string;
@@ -38,6 +67,8 @@ export interface IRegisterRequest extends IAuthRequest {
   username: string;
   name: string;
 }
+
+/* ================= POST REQUEST ================= */
 
 export interface ICreatePostRequest {
   description: string;

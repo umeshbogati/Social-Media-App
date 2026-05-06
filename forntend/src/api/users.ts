@@ -1,10 +1,52 @@
 import API from "./axios";
 
-export const uploadProfilePicture = async (file: File) => {
+/* ================= TYPES ================= */
+
+export interface UpdateProfileData {
+  name?: string;
+  username?: string;
+  image?: File;
+}
+
+export interface User {
+  _id: string;
+  username: string;
+  name: string;
+  email?: string;
+  profilePicture?: string;
+}
+
+/* ================= HELPERS ================= */
+
+const extractUser = (res: any): User => {
+  return res?.data?.user ?? res?.data;
+};
+
+/* ================= PROFILE UPDATE ================= */
+
+export const updateProfile = async (
+  data: UpdateProfileData,
+): Promise<User> => {
   const formData = new FormData();
-  formData.append("image", file);
-  const response = await API.put("/users/profile", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
+
+  if (data.name) formData.append("name", data.name);
+  if (data.username)
+    formData.append("username", data.username);
+  if (data.image) formData.append("image", data.image);
+
+  const response = await API.put("/users/update", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
-  return response.data;
+
+  return extractUser(response);
+};
+
+/* ================= GET PROFILE ================= */
+
+export const getUserProfile = async (): Promise<User> => {
+  const response = await API.get("/users/me");
+
+  return extractUser(response);
 };

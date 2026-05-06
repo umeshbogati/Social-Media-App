@@ -2,33 +2,39 @@ import express from "express";
 import {
   createPost,
   getPosts,
+  getMyPosts,
   deletePost,
   editPost,
   likePost,
-  commentPost
+  commentPost,
 } from "../controllers/postController";
 
-import { verifyToken } from "../middleware/authmiddleware";
+import { protect } from "../middleware/authmiddleware";
 import { upload } from "../utils/multer";
 
 const router = express.Router();
 
-//  CREATE 
-router.post("/", verifyToken, upload.single("image"), createPost);
-
-//  GET
+/* ================= PUBLIC ROUTES ================= */
 router.get("/", getPosts);
 
-//  DELETE
-router.delete("/:id", verifyToken, deletePost);
+/* ================= PROTECTED ROUTES ================= */
 
-//  EDIT
-router.put("/:id", verifyToken, editPost);
+// CREATE POST
+router.post("/", protect, upload.single("image"), createPost);
 
-//  LIKE
-router.put("/:id/like", verifyToken, likePost);
+// MY POSTS (PROFILE PAGE)
+router.get("/me", protect, getMyPosts);
 
-//  COMMENT
-router.post("/:id/comment", verifyToken, commentPost);
+// DELETE POST
+router.delete("/:id", protect, deletePost);
+
+// EDIT POST
+router.put("/:id", protect, editPost);
+
+// LIKE POST
+router.put("/:id/like", protect, likePost);
+
+// COMMENT POST
+router.post("/:id/comment", protect, commentPost);
 
 export default router;

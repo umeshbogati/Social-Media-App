@@ -1,57 +1,46 @@
 import { PostService } from "../services/postService";
-import {
-  validateCreatePost,
-  validateEditPost,
-  validateComment,
-} from "../schemas/validation";
 import { Request, Response } from "express";
 import {
   sendSuccess,
   sendError,
   handlePostError,
-  handleValidationError,
 } from "../utils/errorhandler";
 import { HTTP_STATUS, ERROR_MESSAGES } from "../constants";
+
+import {
+  createPostSchema,
+  editPostSchema,
+  commentSchema,
+} from "../schemas/zodSchema";
+import { getParamId } from "../utils/getParamId";
 
 interface AuthRequest extends Request {
   user?: any;
   file?: any;
 }
 
-// CREATE POST
+/* ================= CREATE POST ================= */
 export const createPost = async (req: AuthRequest, res: Response) => {
   try {
-    // Check if request body exists
-    if (!req.body) {
-      return sendError(
-        res,
-        HTTP_STATUS.BAD_REQUEST,
-        ERROR_MESSAGES.REQUEST_BODY_REQUIRED,
-      );
-    }
-
-    const errors = validateCreatePost(req.body);
-    if (errors.length > 0) {
-      return handleValidationError(res, errors);
-    }
+    const data = createPostSchema.parse(req.body);
 
     const post = await PostService.createPost(
       req.user.id,
-      req.body,
+      data,
       req.file?.path,
     );
+
     return sendSuccess(res, post, HTTP_STATUS.CREATED);
   } catch (error: any) {
     return sendError(
       res,
-      HTTP_STATUS.INTERNAL_SERVER_ERROR,
-      ERROR_MESSAGES.ERROR_CREATING_POST,
-      error.message,
+      HTTP_STATUS.BAD_REQUEST,
+      error.errors?.[0]?.message || error.message,
     );
   }
 };
 
-// GET POSTS (pagination + search)
+/* ================= GET POSTS ================= */
 export const getPosts = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
@@ -59,6 +48,7 @@ export const getPosts = async (req: Request, res: Response) => {
     const limit = 5;
 
     const posts = await PostService.getPosts(page, search, limit);
+
     return sendSuccess(res, posts);
   } catch (error: any) {
     return sendError(
@@ -70,81 +60,84 @@ export const getPosts = async (req: Request, res: Response) => {
   }
 };
 
-// DELETE POST
+/* ================= GET MY POSTS ================= */
+export const getMyPosts = async (req: AuthRequest, res: Response) => {
+  try {
+    const posts = await PostService.getMyPosts(req.user.id);
+    return sendSuccess(res, posts);
+  } catch (error: any) {
+    return handlePostError(res, error);
+  }
+};
+
+/* ================= DELETE POST ================= */
 export const deletePost = async (req: AuthRequest, res: Response) => {
   try {
-    await PostService.deletePost(req.params.id as string, req.user.id);
-    return sendSuccess(res, { message: "Post deleted successfully" });
+    const postId = getParamId(req.params.id, res);
+    if (!postId) return;
+
+    await PostService.deletePost(postId, req.user.id);
+
+    return sendSuccess(res, { message: "Post deleted" });
   } catch (error: any) {
     return handlePostError(res, error);
   }
 };
 
-// EDIT POST
+/* ================= EDIT POST ================= */
 export const editPost = async (req: AuthRequest, res: Response) => {
   try {
-    // Check if request body exists
-    if (!req.body) {
-      return sendError(
-        res,
-        HTTP_STATUS.BAD_REQUEST,
-        ERROR_MESSAGES.REQUEST_BODY_REQUIRED,
-      );
-    }
+    const postId = getParamId(req.params.id, res);
+    if (!postId) return;
 
-    const errors = validateEditPost(req.body);
-    if (errors.length > 0) {
-      return handleValidationError(res, errors);
-    }
+    const data = editPostSchema.parse(req.body);
 
-    const post = await PostService.editPost(
-      req.params.id as string,
-      req.user.id,
-      req.body,
-    );
+    const post = await PostService.editPost(postId, req.user.id, data);
+
     return sendSuccess(res, post);
   } catch (error: any) {
-    return handlePostError(res, error);
+    return sendError(
+      res,
+      HTTP_STATUS.BAD_REQUEST,
+      error.errors?.[0]?.message || error.message,
+    );
   }
 };
 
-// LIKE / UNLIKE POST
+/* ================= LIKE / UNLIKE ================= */
 export const likePost = async (req: AuthRequest, res: Response) => {
   try {
-    const post = await PostService.likePost(
-      req.params.id as string,
-      req.user.id,
-    );
+    const postId = getParamId(req.params.id, res);
+    if (!postId) return;
+
+    const post = await PostService.likePost(postId, req.user.id);
+
     return sendSuccess(res, post);
   } catch (error: any) {
     return handlePostError(res, error);
   }
 };
 
-// COMMENT ON POST
+/* ================= COMMENT ================= */
 export const commentPost = async (req: AuthRequest, res: Response) => {
   try {
-    // Check if request body exists
-    if (!req.body) {
-      return sendError(
-        res,
-        HTTP_STATUS.BAD_REQUEST,
-        ERROR_MESSAGES.REQUEST_BODY_REQUIRED,
-      );
-    }
+    const postId = getParamId(req.params.id, res);
+    if (!postId) return;
 
-    const errors = validateComment(req.body);
-    if (errors.length > 0) {
-      return handleValidationError(res, errors);
-    }
+    const data = commentSchema.parse(req.body);
 
-    const post = await PostService.commentPost(
-      req.params.id as string,
+    const comment = await PostService.commentPost(
+      postId,
       req.user.id,
-      req.body,
+       data,
     );
-    return sendSuccess(res, post);
+
+    return sendSuccess(res, comment);
   } catch (error: any) {
-    return handlePostError(res, error);
+    return sendError(
+      res,
+      HTTP_STATUS.BAD_REQUEST,
+      error.errors?.[0]?.message || error.message,
+    );
   }
 };

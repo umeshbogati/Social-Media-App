@@ -1,20 +1,26 @@
-// filepath: src/router/routes.tsx
-import { Navigate } from "react-router-dom";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 
-// Public routes that don't require authentication
+/* ================= PUBLIC ROUTES ================= */
 export const publicRoutes = [
-  { path: "/login", element: <Login /> },
-  { path: "/register", element: <Register /> },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <Register />,
+  },
 ];
 
-// Protected routes that require authentication
+/* ================= PROTECTED ROUTES ================= */
 export const protectedRoutes = [
-  { path: "/", element: <Home /> },
-  { path: "/home", element: <Home /> },
+  {
+    path: "/",
+    element: <Home />,
+  },
 ];
 
-// Default redirect
+/* ================= DEFAULT REDIRECT ================= */
 export const defaultRedirect = "/";

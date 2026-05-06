@@ -1,4 +1,8 @@
-// filepath: src/router/index.ts
-export { AppRouter, default } from "./AppRouter";
-export { ProtectedRoute, PublicRoute } from "./ProtectedRoute";
-export * from "./routes";
+export { default as AppRouter } from "./AppRouter";
+
+export {
+  ProtectedRoute,
+  PublicRoute,
+} from "./ProtectedRoute";
+
+export { publicRoutes, protectedRoutes, defaultRedirect } from "./routes";

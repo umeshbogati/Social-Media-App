@@ -1,22 +1,64 @@
-import { Link } from "react-router";
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated, logout } = useAuth();
 
   return (
-    <nav className="navbar">
-      <div className="nav-brand">
-        <Link to="/">Social App</Link>
+    <nav
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "12px 20px",
+        borderBottom: "1px solid #e5e7eb",
+        background: "#fff",
+      }}
+    >
+      {/* BRAND */}
+      <div style={{ fontWeight: "bold" }}>
+        <Link
+          to="/"
+          style={{ textDecoration: "none", color: "black" }}
+        >
+          Social App
+        </Link>
       </div>
-      <div className="nav-links">
+
+      {/* LINKS */}
+      <div style={{ display: "flex", gap: "12px" }}>
         {isAuthenticated ? (
-          <Link to="/">Home</Link>
+          <>
+            <Link to="/" style={{ textDecoration: "none" }}>
+              Home
+            </Link>
+
+            <Link to="/profile" style={{ textDecoration: "none" }}>
+              Profile
+            </Link>
+
+            <button
+              onClick={logout}
+              style={{
+                border: "none",
+                background: "#ef4444",
+                color: "white",
+                padding: "5px 10px",
+                borderRadius: "5px",
+                cursor: "pointer",
+              }}
+            >
+              Logout
+            </button>
+          </>
         ) : (
           <>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
+            <Link to="/login" style={{ textDecoration: "none" }}>
+              Login
+            </Link>
+
+            <Link to="/register" style={{ textDecoration: "none" }}>
+              Register
+            </Link>
           </>
         )}
       </div>

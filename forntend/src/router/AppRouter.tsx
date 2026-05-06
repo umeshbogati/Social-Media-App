@@ -2,12 +2,25 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { publicRoutes, protectedRoutes, defaultRedirect } from "./routes";
 import { ProtectedRoute, PublicRoute } from "./ProtectedRoute";
+import { useContext } from "react";
+import { AuthContext, useAuth } from "../context/AuthContext";
 
-export const AppRouter = () => {
+const AppRouter = () => {
+  const { loading } = useAuth();
+
+  // 🔥 Prevent routing before auth is ready
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-lg font-semibold">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes - redirect to home if already authenticated */}
+        {/* Public routes */}
         {publicRoutes.map((route) => (
           <Route
             key={route.path}
@@ -16,7 +29,7 @@ export const AppRouter = () => {
           />
         ))}
 
-        {/* Protected routes - redirect to login if not authenticated */}
+        {/* Protected routes */}
         {protectedRoutes.map((route) => (
           <Route
             key={route.path}
@@ -25,7 +38,7 @@ export const AppRouter = () => {
           />
         ))}
 
-        {/* Default redirect */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to={defaultRedirect} replace />} />
       </Routes>
     </BrowserRouter>

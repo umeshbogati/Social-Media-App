@@ -1,24 +1,65 @@
 import { UserService } from "../services/userService";
-import { Request, Response } from "express";
+import { Response } from "express";
+import {
+  sendSuccess,
+  sendError,
+} from "../utils/errorhandler";
+import { HTTP_STATUS } from "../constants";
 
-interface AuthRequest extends Request {
-  user?: any;
-}
+import { updateProfileSchema } from "../schemas/zodSchema";
+import { AuthRequest } from "../middleware/authmiddleware";
 
-export const uploadProfilePicture = async (req: AuthRequest, res: Response) => {
+/* ================= UPDATE PROFILE ================= */
+export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user!.id;
 
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+    // 🔥 Zod validation
+    const data = updateProfileSchema.parse(req.body);
+
+    const updateData: any = {
+      ...data,
+    };
+
+    // ✅ Only update image if provided
+    if (req.file?.path) {
+      updateData.profilePicture = req.file.path;
     }
 
-    const user = await UserService.updateProfilePicture(userId, req.file.path);
-    res.json(user);
+    const updatedUser = await UserService.updateProfile(
+      userId,
+      updateData,
+    );
+
+    return sendSuccess(res, {
+      user: updatedUser,
+    });
   } catch (error: any) {
-    if (error.message === "User not found") {
-      return res.status(404).json({ message: error.message });
+    return sendError(
+      res,
+      HTTP_STATUS.BAD_REQUEST,
+      error.errors?.[0]?.message || error.message,
+    );
+  }
+};
+
+/* ================= GET PROFILE ================= */
+export const getProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await UserService.getUserById(req.user!.id);
+
+    if (!user) {
+      return sendError(res, HTTP_STATUS.NOT_FOUND, "User not found");
     }
-    res.status(500).json({ message: "Server error", error: error.message });
+
+    return sendSuccess(res, {
+      user,
+    });
+  } catch (error: any) {
+    return sendError(
+      res,
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      error.message,
+    );
   }
 };

@@ -1,94 +1,133 @@
 import mongoose from "mongoose";
 import Post from "../models/post";
 import {
-  IPost,
   ICreatePostRequest,
   IEditPostRequest,
   ICommentRequest,
 } from "../interfaces";
 
 export class PostService {
+  /* ================= CREATE POST ================= */
   static async createPost(
     userId: string,
     data: ICreatePostRequest,
     imagePath?: string,
-  ): Promise<any> {
-    const post = new Post({
-      userId,
+  ) {
+    const post = await Post.create({
+      user: userId, // ✅ FIXED
       description: data.description,
-      image: imagePath || "",
+      image: imagePath || null,
+      likes: [],
+      comments: [],
     });
-    await post.save();
-    return post.toObject();
+
+    return post.populate("user", "username name profilePicture");
   }
 
-  static async getPosts(
-    page: number = 1,
-    search: string = "",
-    limit: number = 5,
-  ): Promise<any[]> {
-    const posts = await Post.find({
-      description: { $regex: search, $options: "i" },
-    })
+  /* ================= GET POSTS (WITH PAGINATION + METADATA) ================= */
+  static async getPosts(page = 1, search = "", limit = 5) {
+  const skip = (page - 1) * limit;
+
+  const filter = {
+    description: { $regex: search, $options: "i" },
+  };
+
+  const posts = await Post.find(filter)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .populate("user", "username name profilePicture")
+    .populate("comments.user", "username profilePicture")
+    .lean();
+
+  return posts; // ✅ ONLY ARRAY
+}
+
+  /* ================= GET MY POSTS ================= */
+  static async getMyPosts(userId: string) {
+    return Post.find({ user: userId }) // ✅ FIXED
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate("userId", "username name profilePicture");
-    return posts.map((post) => post.toObject());
+      .populate("user", "username name profilePicture")
+      .populate("comments.user", "username profilePicture")
+      .lean();
   }
 
-  static async deletePost(postId: string, userId: string): Promise<void> {
+  /* ================= DELETE POST ================= */
+  static async deletePost(postId: string, userId: string) {
     const post = await Post.findById(postId);
+
     if (!post) throw new Error("Post not found");
-    if (post.userId.toString() !== userId) throw new Error("Not allowed");
+
+    if (post.user.toString() !== userId) {
+      throw new Error("Not authorized");
+    }
 
     await post.deleteOne();
   }
 
+  /* ================= EDIT POST ================= */
   static async editPost(
     postId: string,
     userId: string,
     data: IEditPostRequest,
-  ): Promise<any> {
+  ) {
     const post = await Post.findById(postId);
-    if (!post) throw new Error("Post not found");
-    if (post.userId.toString() !== userId) throw new Error("Not allowed");
 
-    if (data.description) post.description = data.description;
-    await post.save();
-    return post.toObject();
-  }
-
-  static async likePost(postId: string, userId: string): Promise<any> {
-    const post = await Post.findById(postId);
     if (!post) throw new Error("Post not found");
 
-    const userIdStr = userId;
-    if (post.likes.some((id: any) => id.toString() === userIdStr)) {
-      post.likes = post.likes.filter((id: any) => id.toString() !== userIdStr);
-    } else {
-      post.likes.push(new mongoose.Types.ObjectId(userIdStr));
+    if (post.user.toString() !== userId) {
+      throw new Error("Not authorized");
+    }
+
+    if (data.description) {
+      post.description = data.description;
     }
 
     await post.save();
-    return post.toObject();
+
+    return post.populate("user", "username name profilePicture");
   }
 
+  /* ================= LIKE / UNLIKE ================= */
+  static async likePost(postId: string, userId: string) {
+    const post = await Post.findById(postId);
+
+    if (!post) throw new Error("Post not found");
+
+    const uid = new mongoose.Types.ObjectId(userId);
+
+    const index = post.likes.findIndex((id: any) => id.equals(uid));
+
+    if (index > -1) {
+      post.likes.splice(index, 1);
+    } else {
+      post.likes.push(uid);
+    }
+
+    await post.save();
+
+    return post.populate("user", "username name profilePicture");
+  }
+
+  /* ================= COMMENT ================= */
   static async commentPost(
     postId: string,
     userId: string,
     data: ICommentRequest,
-  ): Promise<IPost> {
+  ) {
     const post = await Post.findById(postId);
+
     if (!post) throw new Error("Post not found");
 
     const comment = {
-      userId: new mongoose.Types.ObjectId(userId),
+      user: new mongoose.Types.ObjectId(userId), // ✅ FIXED
       text: data.text,
     };
 
-    post.comments.push(comment);
+    post.comments.push(comment as any);
+
     await post.save();
-    return post.toObject();
+
+    return post.populate("comments.user", "username profilePicture");
   }
 }
