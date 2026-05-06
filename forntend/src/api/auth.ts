@@ -14,7 +14,7 @@ export interface LoginData {
   password: string;
 }
 
-/* ================= RESPONSE TYPES ================= */
+/* ================= RESPONSE ================= */
 
 export interface AuthResponse {
   user: {
@@ -29,8 +29,7 @@ export interface AuthResponse {
   expiresIn?: string;
 }
 
-/* ================= WRAPPED BACKEND RESPONSE ================= */
-
+/* Backend wrapper */
 interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -41,12 +40,12 @@ interface ApiResponse<T> {
 export const register = async (
   data: RegisterData
 ): Promise<AuthResponse> => {
-  const response = await API.post<ApiResponse<AuthResponse>>(
+  const res = await API.post<ApiResponse<AuthResponse>>(
     "/auth/register",
     data
   );
 
-  return response.data.data;
+  return res.data.data;
 };
 
 /* ================= LOGIN ================= */
@@ -54,10 +53,10 @@ export const register = async (
 export const login = async (
   data: LoginData
 ): Promise<AuthResponse> => {
-  const response = await API.post<ApiResponse<AuthResponse>>(
+  const res = await API.post<ApiResponse<AuthResponse>>(
     "/auth/login",
     data
   );
 
-  return response.data.data;
+  return res.data.data;
 };

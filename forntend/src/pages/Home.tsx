@@ -8,8 +8,9 @@ import {
   deletePost,
   updatePost,
   addComment,
-  type Post,
 } from "../api/posts";
+
+import type { Post } from "../types/post";
 
 import { MainLayout } from "../components/Layout";
 
@@ -18,12 +19,10 @@ import {
   Button,
   Card,
   CardContent,
-  CardMedia,
   Typography,
   IconButton,
   Box,
   CircularProgress,
-  Divider,
 } from "@mui/material";
 
 import {
@@ -34,8 +33,6 @@ import {
   AddPhotoAlternate,
 } from "@mui/icons-material";
 
-/* ================= COMPONENT ================= */
-
 const Home = () => {
   const { user } = useAuth();
 
@@ -45,94 +42,88 @@ const Home = () => {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
   const [page, setPage] = useState(1);
 
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
 
-  const [showComments, setShowComments] = useState<string | null>(null);
-  const [commentText, setCommentText] = useState("");
+  const [commentMap, setCommentMap] = useState<Record<string, string>>({});
+  const [activeCommentPost, setActiveCommentPost] = useState<string | null>(null);
 
   /* ================= FETCH POSTS ================= */
-const fetchPosts = async () => {
-  try {
-    const newPosts = await getPosts(page);
+  const fetchPosts = async () => {
+    try {
+      const res = await getPosts(page);
 
-    // const newPosts: Post[] = Array.isArray(res?.data)
-    //   ? res.data
-    //   : [];
+      // ✅ normalize API response safely
+      const newPosts =
+        res?.posts || res?.data || res || [];
 
-    setPosts((prev) =>
-      page === 1 ? newPosts : [...prev, ...newPosts],
-    );
-  } catch (err) {
-    console.error("Fetch posts error:", err);
-    setPosts([]);
-  } finally {
-    setLoading(false);
-  }
-};
+      if (!Array.isArray(newPosts)) {
+        console.error("Invalid posts format:", res);
+        return;
+      }
 
-  /* IMPORTANT: call fetch */
+      setPosts((prev) =>
+        page === 1 ? newPosts : [...prev, ...newPosts]
+      );
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
+    setLoading(true);
     fetchPosts();
   }, [page]);
 
   /* ================= CREATE POST ================= */
-
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!description.trim()) return;
 
     setSubmitting(true);
 
     try {
-      await createPost({
+      const newPost = await createPost({
         description,
         image: image || undefined,
       });
 
+      if (newPost) {
+        setPosts((prev) => [newPost, ...prev]);
+      }
+
       setDescription("");
       setImage(null);
-      setPage(1);
-      fetchPosts();
     } catch (err) {
-      console.error(err);
+      console.error("Create error:", err);
     } finally {
       setSubmitting(false);
     }
   };
 
   /* ================= LIKE ================= */
-
   const handleLike = async (postId: string) => {
     if (!user) return;
 
     try {
-      await likePost(postId);
+      const updated = await likePost(postId);
 
-      setPosts((prev) =>
-        prev.map((post) => {
-          if (post._id !== postId) return post;
-
-          const isLiked = post.likes.includes(user._id);
-
-          return {
-            ...post,
-            likes: isLiked
-              ? post.likes.filter((id) => id !== user._id)
-              : [...post.likes, user._id],
-          };
-        })
-      );
+      if (updated) {
+        setPosts((prev) =>
+          prev.map((p) => (p._id === postId ? updated : p))
+        );
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Like error:", err);
     }
   };
 
   /* ================= DELETE ================= */
-
   const handleDelete = async (postId: string) => {
     if (!window.confirm("Delete this post?")) return;
 
@@ -140,66 +131,76 @@ const fetchPosts = async () => {
       await deletePost(postId);
 
       setPosts((prev) =>
-        prev.filter((post) => post._id !== postId)
+        prev.filter((p) => p._id !== postId)
       );
     } catch (err) {
-      console.error(err);
+      console.error("Delete error:", err);
     }
   };
 
   /* ================= UPDATE ================= */
-
   const handleUpdatePost = async (postId: string) => {
+    if (!editText.trim()) return;
+
     try {
       const updated = await updatePost(postId, {
         description: editText,
       });
 
-      setPosts((prev) =>
-        prev.map((post) =>
-          post._id === postId ? updated : post
-        )
-      );
+      if (updated) {
+        setPosts((prev) =>
+          prev.map((p) => (p._id === postId ? updated : p))
+        );
+      }
 
       setEditingPostId(null);
+      setEditText("");
     } catch (err) {
-      console.error(err);
+      console.error("Update error:", err);
     }
   };
 
   /* ================= COMMENT ================= */
-
   const handleAddComment = async (postId: string) => {
-    if (!commentText.trim()) return;
+    const text = commentMap[postId];
+    if (!text?.trim()) return;
 
     try {
-      const newComment = await addComment(postId, commentText);
+      const updated = await addComment(postId, text);
 
-      setPosts((prev) =>
-        prev.map((post) =>
-          post._id === postId
-            ? {
-                ...post,
-                comments: [...(post.comments || []), newComment],
-              }
-            : post
-        )
-      );
+      if (updated) {
+        setPosts((prev) =>
+          prev.map((p) => (p._id === postId ? updated : p))
+        );
+      }
 
-      setCommentText("");
+      setCommentMap((prev) => ({
+        ...prev,
+        [postId]: "",
+      }));
+
+      setActiveCommentPost(null);
     } catch (err) {
-      console.error(err);
+      console.error("Comment error:", err);
     }
   };
 
-  /* ================= UI ================= */
+  /* ================= LIKE CHECK ================= */
+  const isLiked = (post: Post): boolean => {
+    if (!user) return false;
 
+    return post.likes?.some((id: any) =>
+      String(id?._id ?? id) === String(user._id)
+    );
+  };
+
+  /* ================= UI ================= */
   return (
     <MainLayout>
       <Box sx={{ maxWidth: 600, mx: "auto", py: 2 }}>
 
         {/* CREATE POST */}
-        <Card sx={{ mb: 3, p: 2, borderRadius: 3 }}>
+        <Card sx={{ mb: 3, p: 2 }}>
           <form onSubmit={handleCreatePost}>
             <TextField
               fullWidth
@@ -208,10 +209,9 @@ const fetchPosts = async () => {
               placeholder="What's on your mind?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              sx={{ mb: 2 }}
             />
 
-            <Box display="flex" justifyContent="space-between">
+            <Box display="flex" justifyContent="space-between" mt={1}>
               <label>
                 <input
                   type="file"
@@ -226,11 +226,7 @@ const fetchPosts = async () => {
                 </IconButton>
               </label>
 
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={submitting}
-              >
+              <Button type="submit" variant="contained" disabled={submitting}>
                 {submitting ? "Posting..." : "Post"}
               </Button>
             </Box>
@@ -239,101 +235,90 @@ const fetchPosts = async () => {
 
         {/* POSTS */}
         {loading ? (
-          <Box textAlign="center" py={5}>
-            <CircularProgress />
-          </Box>
-        ) : posts.length === 0 ? (
+          <CircularProgress />
+        ) : !Array.isArray(posts) || posts.length === 0 ? (
           <Typography textAlign="center">
-            No posts yet .
+            No posts yet 🚀
           </Typography>
         ) : (
           posts.map((post) => {
-            const isLiked = user
-              ? post.likes.includes(user._id)
-              : false;
+            const owner =
+              typeof post.user !== "string" ? post.user : null;
 
-            const isOwner = post.user?._id === user?._id;
+            const isOwner = owner?._id === user?._id;
 
             return (
-              <Card key={post._id} sx={{ mb: 2, borderRadius: 3 }}>
+              <Card key={post._id} sx={{ mb: 2 }}>
                 <CardContent>
 
-                  {/* HEADER */}
-                  <Box display="flex" justifyContent="space-between">
-                    <Typography fontWeight="bold">
-                      {post.user?.username}
-                    </Typography>
+                  {/* USER */}
+                  <Typography fontWeight="bold">
+                    {owner?.username || "User"}
+                  </Typography>
 
-                    {isOwner && (
-                      <Box>
-                        <IconButton
-                          onClick={() => {
-                            setEditingPostId(post._id);
-                            setEditText(post.description);
-                          }}
-                        >
-                          <Edit />
-                        </IconButton>
-
-                        <IconButton
-                          color="error"
-                          onClick={() => handleDelete(post._id)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    )}
-                  </Box>
-
-                  {/* DESCRIPTION */}
+                  {/* EDIT */}
                   {editingPostId === post._id ? (
                     <>
                       <TextField
                         fullWidth
                         value={editText}
-                        onChange={(e) =>
-                          setEditText(e.target.value)
-                        }
+                        onChange={(e) => setEditText(e.target.value)}
                       />
 
-                      <Box mt={1}>
+                      <Box display="flex" gap={1} mt={1}>
                         <Button onClick={() => handleUpdatePost(post._id)}>
                           Save
                         </Button>
+
                         <Button onClick={() => setEditingPostId(null)}>
                           Cancel
                         </Button>
                       </Box>
                     </>
                   ) : (
-                    <Typography sx={{ my: 2 }}>
+                    <Typography sx={{ my: 1 }}>
                       {post.description}
                     </Typography>
                   )}
 
-                  {/* IMAGE */}
-                  {post.image && (
-                    <CardMedia component="img" image={post.image} />
-                  )}
-
-                  <Divider sx={{ my: 1 }} />
-
                   {/* ACTIONS */}
-                  <Box display="flex" gap={1}>
+                  <Box display="flex" alignItems="center" gap={1}>
                     <IconButton onClick={() => handleLike(post._id)}>
-                      {isLiked ? (
+                      {isLiked(post) ? (
                         <Favorite color="error" />
                       ) : (
                         <FavoriteBorder />
                       )}
                     </IconButton>
 
-                    <Typography>{post.likes.length}</Typography>
+                    <Typography>{post.likes?.length || 0}</Typography>
 
+                    <IconButton
+                      onClick={() => {
+                        setEditingPostId(post._id);
+                        setEditText(post.description || "");
+                      }}
+                    >
+                      <Edit />
+                    </IconButton>
+
+                    {isOwner && (
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDelete(post._id)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    )}
+                  </Box>
+
+                  {/* COMMENTS */}
+                  <Box mt={2}>
                     <Button
+                      size="small"
                       onClick={() =>
-                        setShowComments(
-                          showComments === post._id
+                        setActiveCommentPost(
+                          activeCommentPost === post._id
                             ? null
                             : post._id
                         )
@@ -341,32 +326,44 @@ const fetchPosts = async () => {
                     >
                       Comments
                     </Button>
+
+                    {activeCommentPost === post._id && (
+                      <Box mt={1}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          placeholder="Write comment..."
+                          value={commentMap[post._id] || ""}
+                          onChange={(e) =>
+                            setCommentMap((prev) => ({
+                              ...prev,
+                              [post._id]: e.target.value,
+                            }))
+                          }
+                        />
+
+                        <Button
+                          onClick={() => handleAddComment(post._id)}
+                          sx={{ mt: 1 }}
+                        >
+                          Post
+                        </Button>
+
+                        <Box mt={1}>
+                          {(post.comments || []).map((c: any, i: number) => (
+                            <Typography key={c._id || i}>
+                              <b>
+                                {typeof c.user === "string"
+                                  ? "User"
+                                  : c.user?.username}
+                              </b>
+                              : {c.text}
+                            </Typography>
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
                   </Box>
-
-                  {/* COMMENTS */}
-                  {showComments === post._id && (
-                    <Box mt={2}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Write comment..."
-                        value={commentText}
-                        onChange={(e) =>
-                          setCommentText(e.target.value)
-                        }
-                      />
-
-                      <Button onClick={() => handleAddComment(post._id)}>
-                        Post
-                      </Button>
-
-                      {(post.comments || []).map((c, i) => (
-                        <Typography key={i}>
-                          <b>{c.user?.username}</b>: {c.text}
-                        </Typography>
-                      ))}
-                    </Box>
-                  )}
 
                 </CardContent>
               </Card>

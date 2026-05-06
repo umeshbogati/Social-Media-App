@@ -1,76 +1,49 @@
 import { Response } from "express";
-import { HTTP_STATUS, ERROR_MESSAGES } from "../constants";
 
-/**
- * Centralized error handler for API responses
- * Usage: sendError(res, HTTP_STATUS.BAD_REQUEST, "User not found")
- */
-export const sendError = (
-  res: Response,
-  statusCode: number = HTTP_STATUS.INTERNAL_SERVER_ERROR,
-  message: string = ERROR_MESSAGES.SERVER_ERROR,
-  details?: any,
-) => {
-  const response: any = { message };
-  if (details) {
-    response.details = details;
-  }
-  return res.status(statusCode).json(response);
-};
+/* ================= SUCCESS ================= */
 
-/**
- * Centralized success handler for API responses
- * Usage: sendSuccess(res, HTTP_STATUS.OK, { user: userData })
- */
 export const sendSuccess = (
   res: Response,
   data: any,
   status = 200,
-  statusCode: number = HTTP_STATUS.OK,
+  message = "Success"
 ) => {
-  return res.status(statusCode).json({
+  return res.status(status).json({
     success: true,
+    message,
     data,
   });
 };
 
-/**
- * Handle common auth errors with appropriate status codes
- */
-export const handleAuthError = (res: Response, error: any) => {
-  if (error.message === ERROR_MESSAGES.USER_NOT_FOUND) {
-    return sendError(res, HTTP_STATUS.NOT_FOUND, error.message);
-  }
-  if (error.message === ERROR_MESSAGES.WRONG_PASSWORD) {
-    return sendError(res, HTTP_STATUS.BAD_REQUEST, error.message);
-  }
-  return sendError(
-    res,
-    HTTP_STATUS.INTERNAL_SERVER_ERROR,
-    ERROR_MESSAGES.SERVER_ERROR,
-  );
+/* ================= ERROR ================= */
+
+export const sendError = (
+  res: Response,
+  status = 500,
+  message = "Something went wrong",
+  error?: any
+) => {
+  return res.status(status).json({
+    success: false,
+    message,
+    error: error || null,
+  });
 };
 
-/**
- * Handle common post errors with appropriate status codes
- */
+/* ================= POST ERROR HANDLER ================= */
 export const handlePostError = (res: Response, error: any) => {
-  if (error.message === ERROR_MESSAGES.POST_NOT_FOUND) {
-    return sendError(res, HTTP_STATUS.NOT_FOUND, error.message);
-  }
-  if (error.message === ERROR_MESSAGES.NOT_ALLOWED) {
-    return sendError(res, HTTP_STATUS.FORBIDDEN, error.message);
-  }
-  return sendError(
-    res,
-    HTTP_STATUS.INTERNAL_SERVER_ERROR,
-    ERROR_MESSAGES.SERVER_ERROR,
-  );
-};
+  console.error("POST ERROR:", error);
 
-/**
- * Handle validation errors
- */
-export const handleValidationError = (res: Response, errors: string[]) => {
-  return sendError(res, HTTP_STATUS.BAD_REQUEST, "Validation errors", errors);
+  if (error.message === "Post not found") {
+    return res.status(404).json({ message: error.message });
+  }
+
+  if (error.message === "Not authorized") {
+    return res.status(403).json({ message: error.message });
+  }
+
+  return res.status(500).json({
+    message: "Server Error",
+    error: error.message,
+  });
 };

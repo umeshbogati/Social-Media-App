@@ -1,8 +1,6 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import { JWT_SECRET } from "../config/env";
-import { sendError } from "../utils/errorhandler";
-import { HTTP_STATUS } from "../constants";
+import User from "../models/user";
 
 export interface AuthRequest extends Request {
   user?: {
@@ -11,41 +9,34 @@ export interface AuthRequest extends Request {
   };
 }
 
-export const protect = (
+export const protect = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader?.startsWith("Bearer ")) {
-      return sendError(res, HTTP_STATUS.UNAUTHORIZED, "No token provided");
-    }
-
-    const token = authHeader.split(" ")[1];
+    const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
-      return sendError(res, HTTP_STATUS.UNAUTHORIZED, "Token missing");
+      return res.status(401).json({ message: "No token provided" });
     }
 
-    if (!JWT_SECRET) {
-      return sendError(res, HTTP_STATUS.INTERNAL_SERVER_ERROR, "JWT secret missing");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+
+    const user = await User.findById(decoded.id).select("_id role");
+
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
-
+    // ✅ FIXED
     req.user = {
-      id: (decoded as any).id,
-      role: (decoded as any).role,
+      id: user._id.toString(),
+      role: user.role,
     };
 
-    next();
-  } catch (error: any) {
-    if (error.name === "TokenExpiredError") {
-      return sendError(res, HTTP_STATUS.UNAUTHORIZED, "Token expired");
-    }
-
-    return sendError(res, HTTP_STATUS.FORBIDDEN, "Invalid token");
+    next(); // ✅ VERY IMPORTANT
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
   }
 };

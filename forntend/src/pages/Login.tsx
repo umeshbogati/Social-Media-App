@@ -1,47 +1,72 @@
 import { useState } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
+import { TextField, Button, Alert, CircularProgress } from "@mui/material";
+
 import { login as loginApi } from "../api/auth";
 import { useNavigate } from "react-router-dom";
-import { TextField, Button, Alert } from "@mui/material";
 import { AuthLayout } from "../components/Layout";
 import { useAuth } from "../context/AuthContext";
+
+/* ================= TYPES ================= */
+
+interface LoginResponse {
+  user: {
+    _id: string;
+    username: string;
+    name: string;
+    email: string;
+    profilePicture?: string;
+  };
+  accessToken: string;
+}
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
 
-  try {
-    const response = await loginApi({ email, password });
+  /* ================= LOGIN ================= */
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    console.log("LOGIN RESPONSE:", response);
+    try {
+      const response = await loginApi({ email, password });
 
-    // ✅ NOW DIRECT ACCESS (NO .data.data)
-    const { user, accessToken } = response;
+      const user = response.user;
+      const accessToken = response.accessToken;
 
-    if (!user || !accessToken) {
-      throw new Error("Invalid login response");
+      if (!user || !accessToken) {
+        throw new Error("Invalid login response");
+      }
+
+      login(user, accessToken);
+      navigate("/");
+    } catch (err: any) {
+      console.error("Login error:", err);
+
+      const message =
+        err?.response?.data?.message || err?.message || "Login failed";
+
+      setError(message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    login(user, accessToken);
-
-    navigate("/");
-  } catch (err: any) {
-    console.error("Login error:", err);
-
-    setError(err.response?.data?.message || "Login failed");
-  }
-};
   return (
     <AuthLayout title="Login">
+      {/* ERROR */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
@@ -49,6 +74,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       )}
 
       <form onSubmit={handleSubmit}>
+        {/* EMAIL */}
         <TextField
           fullWidth
           label="Email"
@@ -59,6 +85,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           margin="normal"
         />
 
+        {/* PASSWORD */}
         <TextField
           fullWidth
           label="Password"
@@ -81,8 +108,15 @@ const handleSubmit = async (e: React.FormEvent) => {
           }}
         />
 
-        <Button fullWidth type="submit" variant="contained" sx={{ mt: 2 }}>
-          Login
+        {/* BUTTON */}
+        <Button
+          fullWidth
+          type="submit"
+          variant="contained"
+          disabled={loading}
+          sx={{ mt: 2 }}
+        >
+          {loading ? <CircularProgress size={22} /> : "Login"}
         </Button>
       </form>
     </AuthLayout>

@@ -34,33 +34,27 @@ export class AuthService {
     });
 
     const accessToken = jwt.sign(
-      {
-        id: user._id.toString(),
-        role: user.role,
-      },
+      { id: user._id.toString(), role: user.role },
       JWT_SECRET!,
-      accessOptions,
+      accessOptions
     );
 
     const refreshToken = jwt.sign(
       { id: user._id.toString() },
       JWT_REFRESH_SECRET!,
-      refreshOptions,
+      refreshOptions
     );
 
-    user.refreshToken = refreshToken;
-    await user.save();
+    await User.findByIdAndUpdate(user._id, {
+      refreshToken,
+    });
 
-    // ✅ BEST PRACTICE: use select instead of delete
     const safeUser = await User.findById(user._id).select(
-      "-password -refreshToken",
+      "-password -refreshToken"
     );
 
     return {
-      user: {
-        ...safeUser?.toObject(),
-        _id: user._id.toString(),
-      },
+      user: safeUser,
       accessToken,
       refreshToken,
     };
@@ -76,7 +70,7 @@ export class AuthService {
 
     const isValid = await bcrypt.compare(
       data.password,
-      user.password,
+      user.password
     );
 
     if (!isValid) {
@@ -84,33 +78,27 @@ export class AuthService {
     }
 
     const accessToken = jwt.sign(
-      {
-        id: user._id.toString(),
-        role: user.role,
-      },
+      { id: user._id.toString(), role: user.role },
       JWT_SECRET!,
-      accessOptions,
+      accessOptions
     );
 
     const refreshToken = jwt.sign(
       { id: user._id.toString() },
       JWT_REFRESH_SECRET!,
-      refreshOptions,
+      refreshOptions
     );
 
-    user.refreshToken = refreshToken;
-    await user.save();
+    await User.findByIdAndUpdate(user._id, {
+      refreshToken,
+    });
 
-    // ✅ clean user response
     const safeUser = await User.findById(user._id).select(
-      "-password -refreshToken",
+      "-password -refreshToken"
     );
 
     return {
-      user: {
-        ...safeUser?.toObject(),
-        _id: user._id.toString(),
-      },
+      user: safeUser,
       accessToken,
       refreshToken,
     };

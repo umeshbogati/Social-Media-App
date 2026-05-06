@@ -1,7 +1,7 @@
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+
 import { logger } from "./utils/logger";
 import { connectDB } from "./config/db";
 
@@ -13,16 +13,33 @@ dotenv.config();
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(logger);
-
-// DB
-connectDB().catch((err) => console.log(err));
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/users", userRoutes);
 
-app.listen(5000, () => console.log("Server running  on port 5000"));
+// Health check (optional but useful)
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
+
+// Start server AFTER DB connection
+const PORT = process.env.PORT || 5000;
+
+connectDB()
+  .then(() => {
+    console.log("MongoDB connected");
+
+    app.listen(PORT, () => {
+      console.log(` Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("DB connection failed:", err);
+    process.exit(1);
+  });

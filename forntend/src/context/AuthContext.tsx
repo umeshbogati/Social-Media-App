@@ -5,9 +5,10 @@ import {
   useContext,
   type ReactNode,
 } from "react";
+
 import API from "../api/axios";
 
-/* ================= TYPES ================= */
+/* ================= USER TYPE ================= */
 
 interface User {
   _id: string;
@@ -15,11 +16,13 @@ interface User {
   name: string;
   email: string;
   profilePicture?: string;
+  role?: "user" | "admin";
 }
+
+/* ================= CONTEXT TYPE ================= */
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   loading: boolean;
   login: (user: User, token: string) => void;
   logout: () => void;
@@ -29,45 +32,35 @@ interface AuthContextType {
 /* ================= CONTEXT ================= */
 
 export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined,
+  undefined
 );
 
 /* ================= PROVIDER ================= */
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   /* ================= INIT AUTH ================= */
 
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem("token");
-
-      if (!storedToken) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        setToken(storedToken);
+        const token = localStorage.getItem("token");
 
-        API.defaults.headers.common.Authorization =
-          `Bearer ${storedToken}`;
+        if (!token) {
+          setLoading(false);
+          return;
+        }
 
-        const res = await API.get("/auth/me");
+        API.defaults.headers.common.Authorization = `Bearer ${token}`;
 
-        // ✅ FIX: safer extraction (prevents undefined crash)
-        const userData =
-          res?.data?.data?.user || res?.data?.user;
+        const res = await API.get<{ user: User }>("/auth/me");
 
-        if (!userData) throw new Error("No user found");
-
-        setUser(userData);
+        setUser(res.data.user);
       } catch (error) {
-        console.log("❌ Token invalid or expired");
-        handleLogout();
+        console.error("Auth error:", error);
+        logout();
       } finally {
         setLoading(false);
       }
@@ -80,20 +73,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = (user: User, token: string) => {
     setUser(user);
-    setToken(token);
 
     localStorage.setItem("token", token);
 
-    API.defaults.headers.common.Authorization =
-      `Bearer ${token}`;
+    API.defaults.headers.common.Authorization = `Bearer ${token}`;
   };
 
   /* ================= LOGOUT ================= */
 
-  const handleLogout = () => {
-    setUser(null);
-    setToken(null);
+  const logout = async () => {
+    try {
+      await API.post("/auth/logout");
+    } catch {
+      // ignore error
+    }
 
+    setUser(null);
     localStorage.removeItem("token");
 
     delete API.defaults.headers.common.Authorization;
@@ -101,19 +96,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   /* ================= VALUE ================= */
 
-  const value: AuthContextType = {
-    user,
-    token,
-    loading,
-    login,
-    logout: handleLogout,
-
-    // ✅ FIX: best practice auth check
-    isAuthenticated: Boolean(token && user),
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        logout,
+        isAuthenticated: !!user,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

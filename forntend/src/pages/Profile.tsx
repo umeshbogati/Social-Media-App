@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 import {
-  getMyPosts,
+  getPosts,
   deletePost,
   updatePost,
-  type Post,
 } from "../api/posts";
+
+import type { Post } from "../types/post";
 
 import {
   Box,
@@ -29,14 +30,16 @@ const Profile = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // edit states
-  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editingPostId, setEditingPostId] =
+    useState<string | null>(null);
+
   const [editText, setEditText] = useState("");
 
-  /* ================= FETCH POSTS ================= */
+  /* ================= FETCH MY POSTS ================= */
   const fetchMyPosts = async () => {
     try {
-      const data = await getMyPosts();
+      const data = await getPosts();
+
       setPosts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Fetch posts error:", err);
@@ -50,29 +53,37 @@ const Profile = () => {
     fetchMyPosts();
   }, []);
 
-  /* ================= DELETE POST ================= */
+  /* ================= DELETE ================= */
   const handleDelete = async (postId: string) => {
     if (!window.confirm("Delete this post?")) return;
 
     try {
       await deletePost(postId);
 
-      setPosts((prev) => prev.filter((p) => p._id !== postId));
+      setPosts((prev) =>
+        prev.filter((p) => p._id !== postId),
+      );
     } catch (err) {
       console.error("Delete error:", err);
     }
   };
 
-  /* ================= EDIT POST ================= */
+  /* ================= UPDATE ================= */
   const handleUpdate = async (postId: string) => {
+    if (!editText.trim()) return;
+
     try {
       const updated = await updatePost(postId, {
         description: editText,
       });
 
-      setPosts((prev) =>
-        prev.map((p) => (p._id === postId ? updated : p)),
-      );
+      if (updated) {
+        setPosts((prev) =>
+          prev.map((p) =>
+            p._id === postId ? updated : p,
+          ),
+        );
+      }
 
       setEditingPostId(null);
       setEditText("");
@@ -137,7 +148,6 @@ const Profile = () => {
                   </Typography>
 
                   <Box>
-                    {/* EDIT ICON */}
                     <IconButton
                       onClick={() => {
                         setEditingPostId(post._id);
@@ -147,17 +157,18 @@ const Profile = () => {
                       <Edit />
                     </IconButton>
 
-                    {/* DELETE ICON */}
                     <IconButton
                       color="error"
-                      onClick={() => handleDelete(post._id)}
+                      onClick={() =>
+                        handleDelete(post._id)
+                      }
                     >
                       <Delete />
                     </IconButton>
                   </Box>
                 </Box>
 
-                {/* DESCRIPTION */}
+                {/* EDIT MODE */}
                 {editingPostId === post._id ? (
                   <>
                     <TextField
@@ -169,7 +180,11 @@ const Profile = () => {
                       sx={{ mt: 2 }}
                     />
 
-                    <Box mt={1} display="flex" gap={1}>
+                    <Box
+                      mt={1}
+                      display="flex"
+                      gap={1}
+                    >
                       <Button
                         variant="contained"
                         onClick={() =>
@@ -180,9 +195,10 @@ const Profile = () => {
                       </Button>
 
                       <Button
-                        onClick={() =>
-                          setEditingPostId(null)
-                        }
+                        onClick={() => {
+                          setEditingPostId(null);
+                          setEditText("");
+                        }}
                       >
                         Cancel
                       </Button>
@@ -205,6 +221,7 @@ const Profile = () => {
                     }}
                   />
                 )}
+
               </CardContent>
             </Card>
           ))

@@ -23,4 +23,10 @@ export const protectedRoutes = [
 ];
 
 /* ================= DEFAULT REDIRECT ================= */
-export const defaultRedirect = "/";
+/*
+  Best practice:
+  - if NOT logged in → /login
+  - if logged in → /
+*/
+export const defaultRedirect = "/login";
+

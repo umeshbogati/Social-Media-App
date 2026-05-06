@@ -1,8 +1,19 @@
-// filepath: src/store/slices/postSlice.ts
-import { createSlice} from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { Post } from "../../api/posts";
 
+/* ================= CLEAN DOMAIN TYPE ================= */
+export interface Post {
+  _id: string;
+  description: string;
+  image?: string;
+  user: any;
+  likes: string[];
+  comments: any[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/* ================= STATE ================= */
 interface PostState {
   posts: Post[];
   currentPost: Post | null;
@@ -12,6 +23,7 @@ interface PostState {
   hasMore: boolean;
 }
 
+/* ================= INITIAL STATE ================= */
 const initialState: PostState = {
   posts: [],
   currentPost: null,
@@ -21,46 +33,77 @@ const initialState: PostState = {
   hasMore: true,
 };
 
+/* ================= SLICE ================= */
 const postSlice = createSlice({
   name: "posts",
   initialState,
   reducers: {
+
+    /* ================= BASIC SETTERS ================= */
     setPosts: (state, action: PayloadAction<Post[]>) => {
       state.posts = action.payload;
     },
+
     appendPosts: (state, action: PayloadAction<Post[]>) => {
       state.posts = [...state.posts, ...action.payload];
     },
+
     addPost: (state, action: PayloadAction<Post>) => {
       state.posts.unshift(action.payload);
     },
+
     updatePost: (state, action: PayloadAction<Post>) => {
-      const index = state.posts.findIndex((p) => p._id === action.payload._id);
+      const index = state.posts.findIndex(
+        (p) => p._id === action.payload._id
+      );
+
       if (index !== -1) {
         state.posts[index] = action.payload;
       }
     },
+
     removePost: (state, action: PayloadAction<string>) => {
-      state.posts = state.posts.filter((p) => p._id !== action.payload);
+      state.posts = state.posts.filter(
+        (p) => p._id !== action.payload
+      );
     },
-    setCurrentPost: (state, action: PayloadAction<Post | null>) => {
+
+    setCurrentPost: (
+      state,
+      action: PayloadAction<Post | null>
+    ) => {
       state.currentPost = action.payload;
     },
+
+    /* ================= UI STATE ================= */
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
-    setError: (state, action: PayloadAction<string | null>) => {
+
+    setError: (
+      state,
+      action: PayloadAction<string | null>
+    ) => {
       state.error = action.payload;
     },
+
     setPage: (state, action: PayloadAction<number>) => {
       state.page = action.payload;
     },
-    setHasMore: (state, action: PayloadAction<boolean>) => {
+
+    setHasMore: (
+      state,
+      action: PayloadAction<boolean>
+    ) => {
       state.hasMore = action.payload;
     },
+
+    /* ================= RESET (VERY IMPORTANT) ================= */
+    resetPostsState: () => initialState,
   },
 });
 
+/* ================= EXPORT ACTIONS ================= */
 export const {
   setPosts,
   appendPosts,
@@ -72,6 +115,8 @@ export const {
   setError,
   setPage,
   setHasMore,
+  resetPostsState,
 } = postSlice.actions;
 
+/* ================= EXPORT REDUCER ================= */
 export default postSlice.reducer;

@@ -1,60 +1,61 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { CircularProgress, Box } from "@mui/material";
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
-
-/* ================= PROTECTED ROUTE ================= */
-
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  // ⏳ wait until auth is ready
+  /* ================= LOADING ================= */
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <p className="text-lg font-semibold">Loading...</p>
-      </div>
+      <Box
+        sx={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
-  // 🚫 not logged in → redirect
+  /* ================= NOT AUTHENTICATED ================= */
   if (!user) {
-    return (
-      <Navigate
-        to="/login"
-        state={{ from: location }}
-        replace
-      />
-    );
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  /* ================= ALLOW ================= */
   return <>{children}</>;
 };
 
-/* ================= PUBLIC ROUTE ================= */
-
-export const PublicRoute = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
+  /* ================= LOADING ================= */
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <p className="text-lg font-semibold">Loading...</p>
-      </div>
+      <Box
+        sx={{
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
-  // 🚫 already logged in → redirect home
-  if (user) {
+  /* ================= AUTH CHECK ================= */
+  const isAuthenticated = !!user;
+
+  if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
-
+  /* ================= ALLOW ================= */
   return <>{children}</>;
 };

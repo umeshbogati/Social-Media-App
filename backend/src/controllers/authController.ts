@@ -1,15 +1,16 @@
-import { AuthService } from "../services/authService";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
 
+import { AuthService } from "../services/authService";
+
 import {
   sendSuccess,
   sendError,
-  handleAuthError,
 } from "../utils/errorhandler";
 
 import { HTTP_STATUS } from "../constants";
+
 import {
   registerSchema,
   loginSchema,
@@ -25,11 +26,8 @@ export const register = async (req: Request, res: Response) => {
   try {
     const data = registerSchema.parse(req.body);
 
-    const {
-      user,
-      accessToken,
-      refreshToken,
-    } = await AuthService.register(data);
+    const { user, accessToken, refreshToken } =
+      await AuthService.register(data);
 
     return sendSuccess(res, {
       user,
@@ -40,7 +38,7 @@ export const register = async (req: Request, res: Response) => {
     return sendError(
       res,
       HTTP_STATUS.BAD_REQUEST,
-      error.errors?.[0]?.message || error.message,
+      error.errors?.[0]?.message || error.message
     );
   }
 };
@@ -48,20 +46,17 @@ export const register = async (req: Request, res: Response) => {
 /* ================= LOGIN ================= */
 export const login = async (req: Request, res: Response) => {
   try {
-    console.log("LOGIN BODY:", req.body); // 🔥 debug
-
     const data = loginSchema.parse(req.body);
 
     const result = await AuthService.login(data);
 
     return sendSuccess(res, result);
   } catch (error: any) {
-    console.error("❌ LOGIN ERROR:", error); // 🔥 REAL ERROR
-
-    return res.status(500).json({
-      message: error.message || "Login failed",
-      stack: error.stack,
-    });
+    return sendError(
+      res,
+      HTTP_STATUS.BAD_REQUEST,
+      error.message || "Login failed"
+    );
   }
 };
 
@@ -74,7 +69,7 @@ export const getMe = async (req: Request, res: Response) => {
       return sendError(
         res,
         HTTP_STATUS.UNAUTHORIZED,
-        "Unauthorized",
+        "Unauthorized"
       );
     }
 
@@ -83,7 +78,7 @@ export const getMe = async (req: Request, res: Response) => {
     return sendError(
       res,
       HTTP_STATUS.INTERNAL_SERVER_ERROR,
-      error.message,
+      error.message
     );
   }
 };
@@ -91,10 +86,16 @@ export const getMe = async (req: Request, res: Response) => {
 /* ================= REFRESH TOKEN ================= */
 export const refreshToken = async (req: Request, res: Response) => {
   try {
-    const token = req.body.refreshToken;
+    const token =
+      req.body.refreshToken ||
+      req.cookies?.refreshToken;
 
     if (!token) {
-      return sendError(res, 401, "No refresh token");
+      return sendError(
+        res,
+        HTTP_STATUS.UNAUTHORIZED,
+        "No refresh token provided"
+      );
     }
 
     const decoded = jwt.verify(
@@ -105,7 +106,11 @@ export const refreshToken = async (req: Request, res: Response) => {
     const user = await User.findById(decoded.id);
 
     if (!user || user.refreshToken !== token) {
-      return sendError(res, 403, "Invalid refresh token");
+      return sendError(
+        res,
+        HTTP_STATUS.FORBIDDEN,
+        "Invalid refresh token"
+      );
     }
 
     const newAccessToken = jwt.sign(
@@ -118,9 +123,14 @@ export const refreshToken = async (req: Request, res: Response) => {
       accessToken: newAccessToken,
     });
   } catch {
-    return sendError(res, 403, "Invalid or expired refresh token");
+    return sendError(
+      res,
+      HTTP_STATUS.FORBIDDEN,
+      "Invalid or expired refresh token"
+    );
   }
 };
+
 /* ================= LOGOUT ================= */
 export const logout = async (req: Request, res: Response) => {
   try {
@@ -130,16 +140,13 @@ export const logout = async (req: Request, res: Response) => {
       return sendError(
         res,
         HTTP_STATUS.UNAUTHORIZED,
-        "Unauthorized",
+        "Unauthorized"
       );
     }
 
-    const user = await User.findById(userId);
-
-    if (user) {
-      user.refreshToken = null;
-      await user.save();
-    }
+    await User.findByIdAndUpdate(userId, {
+      refreshToken: null,
+    });
 
     return sendSuccess(res, {
       message: "Logged out successfully",
@@ -148,7 +155,7 @@ export const logout = async (req: Request, res: Response) => {
     return sendError(
       res,
       HTTP_STATUS.INTERNAL_SERVER_ERROR,
-      error.message,
+      error.message
     );
   }
 };
