@@ -4,8 +4,8 @@ import {
   createPost,
   likePost,
   deletePost,
-  type Post,
 } from "../api/posts";
+import type { Post } from "../types/post";
 
 export const usePosts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -65,7 +65,7 @@ export const usePosts = () => {
           return {
             ...post,
             likes: isLiked
-              ? post.likes.filter((id) => id !== userId) // UNLIKE
+              ? post.likes.filter((id: any) => id !== userId) // UNLIKE
               : [...post.likes, userId], // LIKE
           };
         }),

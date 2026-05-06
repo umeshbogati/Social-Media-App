@@ -56,14 +56,7 @@ const Home = () => {
     try {
       const res = await getPosts(page);
 
-      // ✅ normalize API response safely
-      const newPosts =
-        res?.posts || res?.data || res || [];
-
-      if (!Array.isArray(newPosts)) {
-        console.error("Invalid posts format:", res);
-        return;
-      }
+      const newPosts = res || [];
 
       setPosts((prev) =>
         page === 1 ? newPosts : [...prev, ...newPosts]
@@ -212,19 +205,26 @@ const Home = () => {
             />
 
             <Box display="flex" justifyContent="space-between" mt={1}>
-              <label>
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={(e) =>
-                    setImage(e.target.files?.[0] || null)
-                  }
-                />
-                <IconButton component="span">
-                  <AddPhotoAlternate />
-                </IconButton>
-              </label>
+              <Box display="flex" alignItems="center" gap={1}>
+                <label>
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={(e) =>
+                      setImage(e.target.files?.[0] || null)
+                    }
+                  />
+                  <IconButton component="span" color={image ? "primary" : "default"}>
+                    <AddPhotoAlternate />
+                  </IconButton>
+                </label>
+                {image && (
+                  <Typography variant="body2" color="text.secondary">
+                    {image.name}
+                  </Typography>
+                )}
+              </Box>
 
               <Button type="submit" variant="contained" disabled={submitting}>
                 {submitting ? "Posting..." : "Post"}
@@ -238,7 +238,7 @@ const Home = () => {
           <CircularProgress />
         ) : !Array.isArray(posts) || posts.length === 0 ? (
           <Typography textAlign="center">
-            No posts yet 🚀
+            No posts yet 
           </Typography>
         ) : (
           posts.map((post) => {
@@ -281,6 +281,31 @@ const Home = () => {
                     </Typography>
                   )}
 
+                  {/* IMAGE */}
+                  {post.image && (
+                    <Box
+                      sx={{
+                        width: "100%",
+                        maxHeight: 500,
+                        overflow: "hidden",
+                        borderRadius: 3,
+                        mb: 2,
+                        mt: 1
+                      }}
+                    >
+                      <img
+                        src={post.image}
+                        alt="post"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block"
+                        }}
+                      />
+                    </Box>
+                  )}
+
                   {/* ACTIONS */}
                   <Box display="flex" alignItems="center" gap={1}>
                     <IconButton onClick={() => handleLike(post._id)}>
@@ -293,14 +318,16 @@ const Home = () => {
 
                     <Typography>{post.likes?.length || 0}</Typography>
 
-                    <IconButton
-                      onClick={() => {
-                        setEditingPostId(post._id);
-                        setEditText(post.description || "");
-                      }}
-                    >
-                      <Edit />
-                    </IconButton>
+                    {isOwner && (
+                      <IconButton
+                        onClick={() => {
+                          setEditingPostId(post._id);
+                          setEditText(post.description || "");
+                        }}
+                      >
+                        <Edit />
+                      </IconButton>
+                    )}
 
                     {isOwner && (
                       <IconButton
