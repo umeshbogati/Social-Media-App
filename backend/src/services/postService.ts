@@ -65,7 +65,7 @@ export class PostService {
 
     if (!post) throw new Error("Post not found");
 
-    if (post.user.toString() !== userId.toString()) {
+    if (!post.user || post.user.toString() !== userId.toString()) {
       throw new Error("Not authorized");
     }
 
@@ -84,7 +84,7 @@ export class PostService {
 
     if (!post) throw new Error("Post not found");
 
-    if (post.user.toString() !== userId.toString()) {
+    if (!post.user || post.user.toString() !== userId.toString()) {
       throw new Error("Not authorized");
     }
 
