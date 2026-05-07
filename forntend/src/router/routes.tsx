@@ -2,7 +2,7 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 
-/* ================= PUBLIC ROUTES ================= */
+// public routes that do not require authentication
 export const publicRoutes = [
   {
     path: "/login",
@@ -13,8 +13,7 @@ export const publicRoutes = [
     element: <Register />,
   },
 ];
-
-/* ================= PROTECTED ROUTES ================= */
+// protected routes that require authentication
 export const protectedRoutes = [
   {
     path: "/",
@@ -22,11 +21,6 @@ export const protectedRoutes = [
   },
 ];
 
-/* ================= DEFAULT REDIRECT ================= */
-/*
-  Best practice:
-  - if NOT logged in → /login
-  - if logged in → /
-*/
+//default redirect for unmatched routes
 export const defaultRedirect = "/login";
 

@@ -4,7 +4,7 @@ import jwt, { SignOptions } from "jsonwebtoken";
 import { IRegisterRequest, IAuthRequest } from "../interfaces";
 import { JWT_SECRET, JWT_REFRESH_SECRET } from "../config/env";
 
-/* ================= TOKEN OPTIONS ================= */
+// Token options
 
 const accessOptions: SignOptions = {
   expiresIn: "3h",
@@ -14,10 +14,10 @@ const refreshOptions: SignOptions = {
   expiresIn: "7d",
 };
 
-/* ================= AUTH SERVICE ================= */
+// Auth Service
 
 export class AuthService {
-  /* ================= REGISTER ================= */
+  // REGISTER
   static async register(data: IRegisterRequest) {
     const existingUser = await User.findOne({ email: data.email });
 
@@ -60,7 +60,7 @@ export class AuthService {
     };
   }
 
-  /* ================= LOGIN ================= */
+  // LOGIN
   static async login(data: IAuthRequest) {
     const user = await User.findOne({ email: data.email });
 

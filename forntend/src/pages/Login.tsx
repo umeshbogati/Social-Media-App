@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthLayout } from "../components/Layout";
 import { useAuth } from "../context/AuthContext";
 
-/* ================= TYPES ================= */
+// Types
 
 interface LoginResponse {
   user: {
@@ -34,7 +34,7 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  /* ================= LOGIN ================= */
+  // Login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");

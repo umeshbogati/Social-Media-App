@@ -21,7 +21,7 @@ const sampleUsers = [
     username: "sachin_singh_kc",
     name: "Sachin Singh KC",
     email: "sachin@example.com",
-    password: "sachin123!", // This will be hashed
+    password: "sachin123!", 
     role: "admin" as const,
   },
 ];
@@ -29,11 +29,11 @@ const sampleUsers = [
 const samplePosts = [
   {
     description: "This is my first post!",
-    image: "", // Empty string means no image
+    image: "", 
   },
   {
     description: "Beautiful sunset today.",
-    image: "", // Empty string means no image
+    image: "", 
   },
 ];
 
@@ -102,8 +102,6 @@ const deleteUserByEmail = async (email: string) => {
 // Run this utility before seeding
 (async () => {
   await deleteUserByEmail("sachin@example.com");
-  // Uncomment the next line to run the full seed after deletion
-  // await seedDatabase();
   process.exit();
 })();
 

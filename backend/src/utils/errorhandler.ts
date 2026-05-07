@@ -1,6 +1,6 @@
 import { Response } from "express";
 
-/* ================= SUCCESS ================= */
+// SUCCESS
 
 export const sendSuccess = (
   res: Response,
@@ -15,7 +15,7 @@ export const sendSuccess = (
   });
 };
 
-/* ================= ERROR ================= */
+// ERROR
 
 export const sendError = (
   res: Response,
@@ -30,7 +30,7 @@ export const sendError = (
   });
 };
 
-/* ================= POST ERROR HANDLER ================= */
+// POST ERROR HANDLER
 export const handlePostError = (res: Response, error: any) => {
   console.error("POST ERROR:", error);
 

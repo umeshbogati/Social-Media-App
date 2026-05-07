@@ -8,7 +8,7 @@ export interface AuthRequest extends Request {
     role?: string;
   };
 }
-
+// Middleware to protect routes
 export const protect = async (
   req: AuthRequest,
   res: Response,
@@ -29,13 +29,13 @@ export const protect = async (
       return res.status(401).json({ message: "User not found" });
     }
 
-    // ✅ FIXED
+    
     req.user = {
       id: user._id.toString(),
       role: user.role,
     };
 
-    next(); // ✅ VERY IMPORTANT
+    next(); 
   } catch (err) {
     return res.status(401).json({ message: "Invalid token" });
   }

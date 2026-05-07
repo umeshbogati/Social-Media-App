@@ -1,15 +1,13 @@
 import mongoose, { Schema, Types, Document } from "mongoose";
 
-/* ================= COMMENT INTERFACE ================= */
-
+// comment interface
 export interface IComment {
   user: Types.ObjectId;
   text: string;
   createdAt: Date;
   updatedAt: Date;
 }
-
-/* ================= POST INTERFACE ================= */
+// post interface
 
 export interface IPost extends Document {
   user: Types.ObjectId;
@@ -21,7 +19,7 @@ export interface IPost extends Document {
   updatedAt: Date;
 }
 
-/* ================= COMMENT SCHEMA ================= */
+// Comment Schema
 
 const commentSchema = new Schema<IComment>(
   {
@@ -38,7 +36,7 @@ const commentSchema = new Schema<IComment>(
   { timestamps: true }
 );
 
-/* ================= POST SCHEMA ================= */
+// Post Schema
 
 const postSchema = new Schema<IPost>(
   {
@@ -68,6 +66,6 @@ const postSchema = new Schema<IPost>(
   { timestamps: true }
 );
 
-/* ================= MODEL ================= */
+// Model
 
 export default mongoose.model<IPost>("Post", postSchema);

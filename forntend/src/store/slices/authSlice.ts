@@ -28,7 +28,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    /* ================= LOGIN ================= */
+   //set credentials after successful login or registration
     setCredentials: (
       state,
       action: PayloadAction<{ user: User; token: string }>,
@@ -38,23 +38,19 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.error = null;
     },
-
-    /* ================= SET USER ================= */
+//update user info (e.g., after profile update)
     setUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
     },
-
-    /* ================= LOADING ================= */
+//set loading state for async operations
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
-
-    /* ================= ERROR ================= */
+//set error message for failed operations
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
-
-    /* ================= HYDRATE (IMPORTANT) ================= */
+    //hydrate auth state from persisted storage (e.g., localStorage) on app startup
     hydrateAuth: (
       state,
       action: PayloadAction<{
@@ -67,7 +63,7 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
     },
 
-    /* ================= LOGOUT ================= */
+   //clear auth state on logout
     logout: (state) => {
       state.user = null;
       state.token = null;

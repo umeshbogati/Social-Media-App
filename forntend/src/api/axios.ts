@@ -4,7 +4,7 @@ const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
 });
 
-/* ================= REQUEST INTERCEPTOR ================= */
+// REQUEST INTERCEPTOR
 
 API.interceptors.request.use(
   (config) => {
@@ -19,7 +19,7 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-/* ================= RESPONSE INTERCEPTOR ================= */
+// RESPONSE INTERCEPTOR
 
 API.interceptors.response.use(
   (response) => response,
@@ -57,7 +57,7 @@ API.interceptors.response.use(
   }
 );
 
-/* ================= TYPES ================= */
+// TYPES
 
 export interface ApiResponse<T> {
   success: boolean;

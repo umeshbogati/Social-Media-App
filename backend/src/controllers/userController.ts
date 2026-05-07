@@ -9,19 +9,19 @@ import { HTTP_STATUS } from "../constants";
 import { updateProfileSchema } from "../schemas/zodSchema";
 import { AuthRequest } from "../middleware/authmiddleware";
 
-/* ================= UPDATE PROFILE ================= */
+// Update Profile Controller
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.id;
 
-    // 🔥 Zod validation
+    //  Zod validation
     const data = updateProfileSchema.parse(req.body);
 
     const updateData: any = {
       ...data,
     };
 
-    // ✅ Only update image if provided
+    // Only update image if provided
     if (req.file?.path) {
       updateData.profilePicture = req.file.path;
     }
@@ -43,7 +43,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
   }
 };
 
-/* ================= GET PROFILE ================= */
+// Get Profile Controller
 export const getProfile = async (req: AuthRequest, res: Response) => {
   try {
     const user = await UserService.getUserById(req.user!.id);

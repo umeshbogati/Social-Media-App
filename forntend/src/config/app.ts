@@ -1,4 +1,4 @@
-// filepath: src/config/app.ts
+
 export const appConfig = {
   appName: "Social Media App",
   version: "1.0.0",

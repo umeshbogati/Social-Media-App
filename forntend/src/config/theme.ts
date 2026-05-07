@@ -1,4 +1,4 @@
-// filepath: src/config/theme.ts
+
 export const theme = {
   colors: {
     primary: "#1877f2",

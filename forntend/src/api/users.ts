@@ -1,6 +1,6 @@
 import API from "./axios";
 
-/* ================= TYPES ================= */
+// TYPES
 
 export interface UpdateProfileData {
   name?: string;
@@ -15,14 +15,13 @@ export interface User {
   email?: string;
   profilePicture?: string;
 }
-
-/* ================= HELPERS ================= */
+// Helper to extract user from response (handles both /users/me and /auth responses)
 
 const extractUser = (res: any): User => {
   return res?.data?.user ?? res?.data;
 };
 
-/* ================= PROFILE UPDATE ================= */
+// Update user profile
 
 export const updateProfile = async (
   data: UpdateProfileData,
@@ -43,8 +42,7 @@ export const updateProfile = async (
   return extractUser(response);
 };
 
-/* ================= GET PROFILE ================= */
-
+// Get current user profile
 export const getUserProfile = async (): Promise<User> => {
   const response = await API.get("/users/me");
 

@@ -1,4 +1,4 @@
-// filepath: src/constants/messages.ts
+
 export const MESSAGES = {
   AUTH: {
     LOGIN_SUCCESS: "Login successful",

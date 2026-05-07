@@ -14,12 +14,10 @@ import { upload } from "../utils/multer";
 
 const router = express.Router();
 
-/* ================= PUBLIC ROUTES ================= */
+// PUBLIC ROUTES
 
 // GET ALL POSTS (add pagination later in controller)
 router.get("/", getPosts);
-
-/* ================= PROTECTED ROUTES ================= */
 
 // CREATE POST
 router.post(

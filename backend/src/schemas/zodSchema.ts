@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/* ================= AUTH ================= */
+//register and login schema
 
 export const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -14,7 +14,7 @@ export const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-/* ================= POST ================= */
+//create post schema
 
 export const createPostSchema = z.object({
   description: z
@@ -31,7 +31,7 @@ export const editPostSchema = z.object({
     .optional(),
 });
 
-/* ================= COMMENT ================= */
+//comment schema
 
 export const commentSchema = z.object({
   text: z
@@ -40,7 +40,7 @@ export const commentSchema = z.object({
     .max(200, "Comment too long"),
 });
 
-/* ================= PROFILE ================= */
+//update profile schema
 
 export const updateProfileSchema = z.object({
   name: z.string().min(2).optional(),

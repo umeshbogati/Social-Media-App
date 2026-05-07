@@ -1,4 +1,4 @@
-/* ================= USER ================= */
+//user interface
 
 export interface IUser {
   _id: string;
@@ -17,9 +17,7 @@ export interface IUser {
   createdAt: string;
   updatedAt: string;
 }
-
-/* ================= COMMENT ================= */
-
+//comment interface
 export interface IComment {
   _id: string;
   text: string;
@@ -33,7 +31,7 @@ export interface IComment {
   createdAt: string;
 }
 
-/* ================= POST ================= */
+//post interface
 
 export interface IPost {
   _id: string;
@@ -56,7 +54,7 @@ export interface IPost {
   updatedAt: string;
 }
 
-/* ================= AUTH ================= */
+//request interfaces
 
 export interface IAuthRequest {
   email: string;
@@ -68,7 +66,7 @@ export interface IRegisterRequest extends IAuthRequest {
   name: string;
 }
 
-/* ================= POST REQUEST ================= */
+// POST REQUEST
 
 export interface ICreatePostRequest {
   description: string;

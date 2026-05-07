@@ -8,10 +8,10 @@ import {
 
 const router = express.Router();
 
-/* ================= GET USER PROFILE ================= */
+// GET USER PROFILE
 router.get("/me", protect, getProfile);
 
-/* ================= UPDATE PROFILE ================= */
+// UPDATE PROFILE
 router.put(
   "/update",
   protect,

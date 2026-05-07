@@ -23,5 +23,5 @@ export interface Post {
 
   comments: Comment[];
 
-  createdAt?: string; // ✅ FIX (backend may or may not send it)
+  createdAt?: string; 
 }

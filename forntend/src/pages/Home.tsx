@@ -51,7 +51,8 @@ const Home = () => {
   const [commentMap, setCommentMap] = useState<Record<string, string>>({});
   const [activeCommentPost, setActiveCommentPost] = useState<string | null>(null);
 
-  /* ================= FETCH POSTS ================= */
+
+//fetch posts
   const fetchPosts = async () => {
     try {
       const res = await getPosts(page);
@@ -73,7 +74,7 @@ const Home = () => {
     fetchPosts();
   }, [page]);
 
-  /* ================= CREATE POST ================= */
+  // Create post
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!description.trim()) return;
@@ -99,7 +100,7 @@ const Home = () => {
     }
   };
 
-  /* ================= LIKE ================= */
+  // Like
   const handleLike = async (postId: string) => {
     if (!user) return;
 
@@ -116,7 +117,7 @@ const Home = () => {
     }
   };
 
-  /* ================= DELETE ================= */
+  // Delete post
   const handleDelete = async (postId: string) => {
     if (!window.confirm("Delete this post?")) return;
 
@@ -131,7 +132,7 @@ const Home = () => {
     }
   };
 
-  /* ================= UPDATE ================= */
+  // Update post
   const handleUpdatePost = async (postId: string) => {
     if (!editText.trim()) return;
 
@@ -153,7 +154,7 @@ const Home = () => {
     }
   };
 
-  /* ================= COMMENT ================= */
+  // Add comment
   const handleAddComment = async (postId: string) => {
     const text = commentMap[postId];
     if (!text?.trim()) return;
@@ -178,7 +179,7 @@ const Home = () => {
     }
   };
 
-  /* ================= LIKE CHECK ================= */
+  // Like check
   const isLiked = (post: Post): boolean => {
     if (!user) return false;
 
@@ -187,7 +188,7 @@ const Home = () => {
     );
   };
 
-  /* ================= UI ================= */
+  // UI
   return (
     <MainLayout>
       <Box sx={{ maxWidth: 600, mx: "auto", py: 2 }}>

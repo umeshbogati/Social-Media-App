@@ -1,4 +1,4 @@
-// filepath: src/utils/formatDate.ts
+
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   const now = new Date();

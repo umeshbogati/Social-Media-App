@@ -16,7 +16,7 @@ import { CircularProgress, Box } from "@mui/material";
 const AppRouter = () => {
   const { loading } = useAuth();
 
-  /* ================= GLOBAL LOADING ================= */
+//global loading state (e.g. checking auth)
   if (loading) {
     return (
       <Box
@@ -36,7 +36,7 @@ const AppRouter = () => {
     <BrowserRouter>
       <Routes>
 
-        {/* ================= PUBLIC ROUTES ================= */}
+      
         {publicRoutes.map((route) => (
           <Route
             key={route.path}
@@ -49,7 +49,7 @@ const AppRouter = () => {
           />
         ))}
 
-        {/* ================= PROTECTED ROUTES ================= */}
+        
         {protectedRoutes.map((route) => (
           <Route
             key={route.path}
@@ -62,7 +62,7 @@ const AppRouter = () => {
           />
         ))}
 
-        {/* ================= FALLBACK ================= */}
+       
         <Route
           path="*"
           element={

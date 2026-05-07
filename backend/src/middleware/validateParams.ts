@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { sendError } from "../utils/errorhandler";
 import { HTTP_STATUS } from "../constants";
 
+// Middleware to validate route parameters
+
 type ParamKey = "id" | "postId" | "userId";
 
 export const validateParam =

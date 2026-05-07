@@ -1,4 +1,4 @@
-// filepath: src/interfaces/post.ts
+
 export interface IPost {
   _id: string;
   userId: {

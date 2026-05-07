@@ -12,7 +12,7 @@ export const usePosts = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /* ================= FETCH POSTS ================= */
+  // Fetch posts
   const fetchPosts = useCallback(async (page = 1) => {
     setLoading(true);
     setError(null);
@@ -33,7 +33,7 @@ export const usePosts = () => {
     }
   }, []);
 
-  /* ================= CREATE POST ================= */
+  // Create post
   const addPost = useCallback(
     async (description: string, image?: File) => {
       setLoading(true);
@@ -51,7 +51,7 @@ export const usePosts = () => {
     [fetchPosts],
   );
 
-  /* ================= LIKE / UNLIKE TOGGLE ================= */
+  // Like / Unlike toggle
   const like = useCallback(async (postId: string, userId: string) => {
     try {
       await likePost(postId);
@@ -75,7 +75,7 @@ export const usePosts = () => {
     }
   }, []);
 
-  /* ================= DELETE POST ================= */
+  // Delete post
   const remove = useCallback(async (postId: string) => {
     try {
       await deletePost(postId);

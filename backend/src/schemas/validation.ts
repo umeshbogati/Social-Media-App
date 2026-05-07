@@ -10,7 +10,7 @@ export const validateRegister = (data: any) => {
     errors.push("Password must be at least 8 characters");
   return errors;
 };
-
+// Validation functions for different routes
 export const validateLogin = (data: any) => {
   const errors: string[] = [];
   if (!data.email || !data.email.includes("@"))

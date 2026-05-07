@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 import bcrypt from "bcryptjs";
 
-/* ================= INTERFACE ================= */
+// User Interface
 
 export interface IUser extends Document {
   username: string;
@@ -19,9 +19,7 @@ export interface IUser extends Document {
 
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
-
-/* ================= SCHEMA ================= */
-
+// User Schema
 const userSchema = new Schema<IUser>(
   {
     username: { type: String, required: true, unique: true, trim: true },
@@ -42,8 +40,7 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true }
 );
-
-/* ================= FIXED PRE-SAVE ================= */
+// Pre-save hook to hash password
 userSchema.pre<IUser>("save", async function () {
   try {
     if (!this.isModified("password")) return ;
@@ -53,19 +50,18 @@ userSchema.pre<IUser>("save", async function () {
 
     
   } catch (err) {
-    // next(err as Error);
+    throw err;
   }
 });
 
-/* ================= METHODS ================= */
-
+// Methods
 userSchema.methods.comparePassword = function (
   candidatePassword: string
 ): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-/* ================= MODEL ================= */
+// Model
 
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
 

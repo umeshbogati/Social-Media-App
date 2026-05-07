@@ -1,4 +1,4 @@
-// filepath: src/store/index.ts
+
 import { configureStore } from "@reduxjs/toolkit";
 import { authReducer, postReducer } from "./slices";
 

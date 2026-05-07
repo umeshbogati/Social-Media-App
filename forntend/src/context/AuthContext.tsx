@@ -8,7 +8,7 @@ import {
 
 import API from "../api/axios";
 
-/* ================= USER TYPE ================= */
+// User type
 
 interface User {
   _id: string;
@@ -19,7 +19,7 @@ interface User {
   role?: "user" | "admin";
 }
 
-/* ================= CONTEXT TYPE ================= */
+// Auth context type
 
 interface AuthContextType {
   user: User | null;
@@ -30,19 +30,19 @@ interface AuthContextType {
   isAuthenticated: boolean;
 }
 
-/* ================= CONTEXT ================= */
+// Create context
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
-/* ================= PROVIDER ================= */
+// Provider component
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* ================= INIT AUTH ================= */
+  // Initialize auth state on app load
 
   useEffect(() => {
     const initAuth = async () => {
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initAuth();
   }, []);
 
-  /* ================= LOGIN ================= */
+  // Login
 
   const login = (user: User, token: string) => {
     setUser(user);
@@ -80,8 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     API.defaults.headers.common.Authorization = `Bearer ${token}`;
   };
 
-  /* ================= LOGOUT ================= */
-
+//Logout
   const logout = async () => {
     try {
       await API.post("/auth/logout");
@@ -95,13 +94,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     delete API.defaults.headers.common.Authorization;
   };
 
-  /* ================= UPDATE USER ================= */
-
+// Update user
   const updateUser = (updatedUser: User) => {
     setUser((prev) => (prev ? { ...prev, ...updatedUser } : updatedUser));
   };
 
-  /* ================= VALUE ================= */
+
 
   return (
     <AuthContext.Provider
@@ -119,7 +117,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-/* ================= HOOK ================= */
+// Custom hook to use auth context
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

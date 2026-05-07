@@ -73,7 +73,7 @@ const Profile = () => {
     }
   };
 
-  /* ================= FETCH MY POSTS ================= */
+  // Fetch my posts
   const fetchMyPosts = async () => {
     try {
       const data = await getMyPosts();
@@ -90,7 +90,7 @@ const Profile = () => {
     fetchMyPosts();
   }, []);
 
-  /* ================= DELETE ================= */
+  // Delete post
   const handleDelete = async (postId: string) => {
     if (!window.confirm("Delete this post?")) return;
 
@@ -102,7 +102,7 @@ const Profile = () => {
     }
   };
 
-  /* ================= UPDATE ================= */
+  // Update post
   const handleUpdate = async (postId: string) => {
     if (!editText.trim()) return;
 
@@ -124,7 +124,7 @@ const Profile = () => {
     }
   };
 
-  /* ================= LIKE ================= */
+  // Like
   const handleLike = async (postId: string) => {
     if (!user) return;
 
@@ -141,7 +141,7 @@ const Profile = () => {
     }
   };
 
-  /* ================= COMMENT ================= */
+  // Add comment
   const handleAddComment = async (postId: string) => {
     const text = commentMap[postId];
     if (!text?.trim()) return;
@@ -166,7 +166,7 @@ const Profile = () => {
     }
   };
 
-  /* ================= LIKE CHECK ================= */
+  // Like check
   const isLiked = (post: Post): boolean => {
     if (!user) return false;
 
@@ -175,7 +175,7 @@ const Profile = () => {
     );
   };
 
-  /* ================= UI ================= */
+  // UI
   return (
     <MainLayout>
       <Box sx={{ maxWidth: 800, mx: "auto", py: 3, px: 2 }}>

@@ -1,6 +1,6 @@
 import API from "./axios";
 
-/* ================= TYPES ================= */
+// TYPES
 
 export interface RegisterData {
   username: string;
@@ -13,8 +13,7 @@ export interface LoginData {
   email: string;
   password: string;
 }
-
-/* ================= RESPONSE ================= */
+// Response from backend after successful auth
 
 export interface AuthResponse {
   user: {
@@ -28,14 +27,13 @@ export interface AuthResponse {
   refreshToken: string;
   expiresIn?: string;
 }
-
-/* Backend wrapper */
+// API response format
 interface ApiResponse<T> {
   success: boolean;
   data: T;
 }
 
-/* ================= REGISTER ================= */
+// Register
 
 export const register = async (
   data: RegisterData
@@ -48,7 +46,7 @@ export const register = async (
   return res.data.data;
 };
 
-/* ================= LOGIN ================= */
+//Login 
 
 export const login = async (
   data: LoginData

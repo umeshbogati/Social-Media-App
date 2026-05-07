@@ -17,7 +17,7 @@ import {
 
 import { getParamId } from "../utils/getParamId";
 
-/* ================= TYPES ================= */
+// Define Authenticated Request Type
 
 interface AuthUser {
   id: string;
@@ -29,7 +29,7 @@ interface AuthRequest extends Request {
   file?: Express.Multer.File;
 }
 
-/* ================= CREATE POST ================= */
+// Create Post Controller
 export const createPost = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.id) {
@@ -52,7 +52,7 @@ export const createPost = async (req: AuthRequest, res: Response) => {
   }
 };
 
-/* ================= GET POSTS ================= */
+// Get Posts Controller
 export const getPosts = async (req: Request, res: Response) => {
   try {
     const page = Number(req.query.page) || 1;
@@ -71,7 +71,7 @@ export const getPosts = async (req: Request, res: Response) => {
   }
 };
 
-/* ================= GET MY POSTS ================= */
+// Get My Posts Controller
 export const getMyPosts = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.id) {
@@ -86,7 +86,7 @@ export const getMyPosts = async (req: AuthRequest, res: Response) => {
   }
 };
 
-/* ================= DELETE POST ================= */
+// Delete Post Controller
 export const deletePost = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.id) {
@@ -107,7 +107,7 @@ export const deletePost = async (req: AuthRequest, res: Response) => {
   }
 };
 
-/* ================= EDIT POST ================= */
+// Edit Post Controller
 export const editPost = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.id) {
@@ -135,7 +135,7 @@ export const editPost = async (req: AuthRequest, res: Response) => {
   }
 };
 
-/* ================= LIKE ================= */
+// Like Post Controller
 export const likePost = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.id) {
@@ -156,7 +156,7 @@ export const likePost = async (req: AuthRequest, res: Response) => {
   }
 };
 
-/* ================= COMMENT ================= */
+// Comment Post Controller
 export const commentPost = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.id) {

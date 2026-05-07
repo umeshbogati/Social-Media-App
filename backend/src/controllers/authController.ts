@@ -21,7 +21,7 @@ import {
   JWT_REFRESH_SECRET,
 } from "../config/env";
 
-/* ================= REGISTER ================= */
+// Register Controller
 export const register = async (req: Request, res: Response) => {
   try {
     const data = registerSchema.parse(req.body);
@@ -43,7 +43,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-/* ================= LOGIN ================= */
+// Login Controller
 export const login = async (req: Request, res: Response) => {
   try {
     const data = loginSchema.parse(req.body);
@@ -60,7 +60,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-/* ================= GET ME ================= */
+// Get Current User Controller
 export const getMe = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
@@ -83,7 +83,7 @@ export const getMe = async (req: Request, res: Response) => {
   }
 };
 
-/* ================= REFRESH TOKEN ================= */
+// Refresh Token Controller
 export const refreshToken = async (req: Request, res: Response) => {
   try {
     const token =
@@ -131,7 +131,7 @@ export const refreshToken = async (req: Request, res: Response) => {
   }
 };
 
-/* ================= LOGOUT ================= */
+// Logout Controller
 export const logout = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;

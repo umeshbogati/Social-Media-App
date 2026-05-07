@@ -10,13 +10,12 @@ import {
 import { protect } from "../middleware/authmiddleware";
 
 const router = express.Router();
-
-/* ================= PUBLIC ROUTES ================= */
+// Public Routes
 router.post("/register", register);
 router.post("/login", login);
 router.post("/refresh", refreshToken);
 
-/* ================= PROTECTED ROUTES ================= */
+// PROTECTED ROUTES
 router.get("/me", protect, getMe);
 router.post("/logout", protect, logout);
 

@@ -1,4 +1,4 @@
-// filepath: src/schemas/post.ts
+
 export const postSchema = {
   description: {
     required: "Description is required",

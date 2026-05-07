@@ -1,4 +1,4 @@
-// filepath: src/utils/storage.ts
+
 export const storage = {
   get: (key: string): string | null => {
     try {

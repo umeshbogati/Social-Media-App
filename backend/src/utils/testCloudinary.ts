@@ -13,12 +13,6 @@ const testCloudinary = async () => {
       status: result.status,
     });
 
-    // Test upload (optional - comment out if you don't want to upload a test image)
-    // const uploadResult = await cloudinary.uploader.upload(
-    //   "https://picsum.photos/200/300", // Sample image URL
-    //   { folder: "social-media-app/test" }
-    // );
-    // console.log("🖼️ Test upload successful:", uploadResult.secure_url);
   } catch (error: any) {
     console.error(" Cloudinary test failed:", error.message);
     console.error(" Check your environment variables:");

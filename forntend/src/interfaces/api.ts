@@ -1,4 +1,4 @@
-// filepath: src/interfaces/api.ts
+
 export interface IApiResponse<T = any> {
   data: T;
   message?: string;

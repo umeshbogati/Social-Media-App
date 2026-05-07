@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { ZodSchema } from "zod";
 import { sendError } from "../utils/errorhandler";
 import { HTTP_STATUS } from "../constants";
-
+// Validation Middleware
 export const validate =
   (schema: ZodSchema) =>
   (req: Request, res: Response, next: NextFunction) => {

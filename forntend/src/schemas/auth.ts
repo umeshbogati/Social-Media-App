@@ -1,4 +1,4 @@
-// filepath: src/schemas/auth.ts
+
 export const loginSchema = {
   email: {
     required: "Email is required",

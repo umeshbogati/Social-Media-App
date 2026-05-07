@@ -1,4 +1,4 @@
-// filepath: src/hooks/useLocalStorage.ts
+
 import { useState, useEffect } from "react";
 
 export const useLocalStorage = <T>(key: string, initialValue: T) => {

@@ -16,8 +16,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
-
-/* ================= PRIVATE ROUTE ================= */
+// PrivateRoute component to protect routes that require authentication
 const PrivateRoute = ({
   children,
 }: {
@@ -50,8 +49,7 @@ const PrivateRoute = ({
     <Navigate to="/login" replace />
   );
 };
-
-/* ================= APP ================= */
+// Main App component with routing
 function App() {
   return (
     <AuthProvider>

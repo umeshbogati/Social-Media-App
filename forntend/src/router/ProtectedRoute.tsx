@@ -6,7 +6,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  /* ================= LOADING ================= */
+  // Show loading spinner while checking auth
   if (loading) {
     return (
       <Box
@@ -21,20 +21,19 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       </Box>
     );
   }
-
-  /* ================= NOT AUTHENTICATED ================= */
+// If not authenticated, redirect to login
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  /* ================= ALLOW ================= */
+  // ALLOW
   return <>{children}</>;
 };
 
 export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
-  /* ================= LOADING ================= */
+  // Show loading spinner while checking auth
   if (loading) {
     return (
       <Box
@@ -50,12 +49,12 @@ export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  /* ================= AUTH CHECK ================= */
+  // Auth check
   const isAuthenticated = !!user;
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
-  /* ================= ALLOW ================= */
+  // ALLOW
   return <>{children}</>;
 };

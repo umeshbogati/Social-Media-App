@@ -9,7 +9,7 @@ import {
 
 export class PostService {
 
-  /* ================= CREATE ================= */
+  // CREATE
   static async createPost(
     userId: string,
     data: ICreatePostRequest,
@@ -29,7 +29,7 @@ export class PostService {
     );
   }
 
-  /* ================= GET POSTS ================= */
+  // GET POSTS
   static async getPosts(
     page = 1,
     search = "",
@@ -50,7 +50,7 @@ export class PostService {
       .lean();
   }
 
-  /* ================= GET MY POSTS ================= */
+  // GET MY POSTS
   static async getMyPosts(userId: string) {
     return await Post.find({ user: userId })
       .sort({ createdAt: -1 })
@@ -59,7 +59,7 @@ export class PostService {
       .lean();
   }
 
-  /* ================= DELETE ================= */
+  // DELETE
   static async deletePost(postId: string, userId: string) {
     const post = await Post.findById(postId);
 
@@ -98,7 +98,7 @@ export class PostService {
     );
   }
 
-  /* ================= LIKE (ATOMIC SAFE VERSION) ================= */
+  // LIKE (ATOMIC SAFE VERSION)
   static async likePost(postId: string, userId: string) {
     const uid = new mongoose.Types.ObjectId(userId);
 
@@ -124,7 +124,7 @@ export class PostService {
     return updatedPost;
   }
 
-  /* ================= COMMENT (SAFE + FAST) ================= */
+  // COMMENT (SAFE + FAST)
   static async commentPost(
     postId: string,
     userId: string,

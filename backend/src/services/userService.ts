@@ -7,7 +7,7 @@ type SafeUser = Omit<IUser, "password" | "createdAt" | "updatedAt"> & {
 };
 
 export class UserService {
-  /* ================= UPDATE PROFILE ================= */
+  // UPDATE PROFILE
   static async updateProfile(
     userId: string,
     data: {
@@ -47,7 +47,7 @@ export class UserService {
     };
   }
 
-  /* ================= GET USER BY ID ================= */
+  // GET USER BY ID
   static async getUserById(userId: string): Promise<SafeUser | null> {
     const user = await User.findById(userId).lean();
 
@@ -68,7 +68,7 @@ export class UserService {
     };
   }
 
-  /* ================= GET PROFILE ================= */
+  // GET PROFILE
   static async getProfile(userId: string): Promise<SafeUser | null> {
     const user = await User.findById(userId)
       .select("-password")
