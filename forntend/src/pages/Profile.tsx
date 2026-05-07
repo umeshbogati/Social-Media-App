@@ -9,6 +9,8 @@ import {
   addComment,
 } from "../api/posts";
 
+import { updateProfile } from "../api/users";
+
 import type { Post } from "../types/post";
 
 import {
@@ -33,7 +35,7 @@ import {
 import { MainLayout } from "../components/Layout";
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +45,33 @@ const Profile = () => {
 
   const [commentMap, setCommentMap] = useState<Record<string, string>>({});
   const [activeCommentPost, setActiveCommentPost] = useState<string | null>(null);
+
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editUsername, setEditUsername] = useState("");
+  const [editImage, setEditImage] = useState<File | null>(null);
+
+  const handleEditProfileClick = () => {
+    setEditName(user?.name || "");
+    setEditUsername(user?.username || "");
+    setEditImage(null);
+    setIsEditingProfile(true);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const updatedUser = await updateProfile({
+        name: editName,
+        username: editUsername,
+        image: editImage || undefined,
+      });
+      updateUser(updatedUser);
+      setIsEditingProfile(false);
+    } catch (err) {
+      console.error("Failed to update profile", err);
+      alert("Failed to update profile");
+    }
+  };
 
   /* ================= FETCH MY POSTS ================= */
   const fetchMyPosts = async () => {
@@ -183,67 +212,113 @@ const Profile = () => {
                 border: "4px solid #fff",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                 fontSize: 48,
-                bgcolor: "#f0f0f0",
-                color: "#333",
-              }}
-            >
-              {user?.username?.charAt(0).toUpperCase()}
-            </Avatar>
+              bgcolor: "#f0f0f0",
+              color: "#333",
+            }}
+            src={user?.profilePicture}
+          >
+            {user?.username?.charAt(0).toUpperCase()}
+          </Avatar>
 
-            <Box display="flex" justifyContent="space-between" alignItems="flex-end">
-              <Box>
-                <Typography variant="h4" fontWeight="800" letterSpacing="-0.5px">
-                  {user?.name || "Your Name"}
-                </Typography>
-                <Typography variant="subtitle1" color="text.secondary" fontWeight="500">
-                  @{user?.username || "username"}
-                </Typography>
-              </Box>
-              <Button
-                variant="outlined"
-                sx={{
-                  borderRadius: 20,
-                  textTransform: "none",
-                  fontWeight: "bold",
-                  borderColor: "#764ba2",
-                  color: "#764ba2",
-                  "&:hover": {
-                    borderColor: "#667eea",
-                    background: "rgba(102, 126, 234, 0.04)"
-                  }
-                }}
-              >
-                Edit Profile
-              </Button>
-            </Box>
-
-            <Box mt={3} display="flex" gap={4}>
-              <Box>
-                <Typography variant="h6" fontWeight="bold">
-                  {posts.length}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Posts
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="h6" fontWeight="bold">
-                  0
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Followers
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="h6" fontWeight="bold">
-                  0
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Following
-                </Typography>
+          {isEditingProfile ? (
+            <Box mt={2}>
+              <Typography variant="h5" fontWeight="bold" mb={3}>Edit Profile</Typography>
+              <Box display="flex" flexDirection="column" gap={3}>
+                <TextField
+                  label="Name"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                />
+                <TextField
+                  label="Username"
+                  value={editUsername}
+                  onChange={(e) => setEditUsername(e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                />
+                <Box>
+                  <Button variant="outlined" component="label" sx={{ textTransform: "none", borderRadius: 2 }}>
+                    Upload New Profile Picture
+                    <input type="file" hidden accept="image/*" onChange={(e) => setEditImage(e.target.files?.[0] || null)} />
+                  </Button>
+                  {editImage && <Typography variant="caption" sx={{ ml: 2 }}>{editImage.name}</Typography>}
+                </Box>
+                <Box display="flex" gap={2} mt={1}>
+                  <Button variant="contained" onClick={handleSaveProfile} sx={{ borderRadius: 2, textTransform: "none", fontWeight: "bold", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
+                    Save Changes
+                  </Button>
+                  <Button variant="outlined" color="inherit" onClick={() => setIsEditingProfile(false)} sx={{ borderRadius: 2, textTransform: "none" }}>
+                    Cancel
+                  </Button>
+                </Box>
               </Box>
             </Box>
-          </Box>
+          ) : (
+            <>
+              <Box display="flex" justifyContent="space-between" alignItems="flex-end">
+                <Box>
+                  <Typography variant="h4" fontWeight="800" letterSpacing="-0.5px">
+                    {user?.name || "Your Name"}
+                  </Typography>
+                  <Typography variant="subtitle1" color="text.secondary" fontWeight="500">
+                    @{user?.username || "username"}
+                  </Typography>
+                  {user?.email && (
+                    <Typography variant="subtitle2" color="text.secondary" mt={0.5}>
+                      {user.email}
+                    </Typography>
+                  )}
+                </Box>
+                <Button
+                  variant="outlined"
+                  onClick={handleEditProfileClick}
+                  sx={{
+                    borderRadius: 20,
+                    textTransform: "none",
+                    fontWeight: "bold",
+                    borderColor: "#764ba2",
+                    color: "#764ba2",
+                    "&:hover": {
+                      borderColor: "#667eea",
+                      background: "rgba(102, 126, 234, 0.04)"
+                    }
+                  }}
+                >
+                  Edit Profile
+                </Button>
+              </Box>
+
+              <Box mt={3} display="flex" gap={4}>
+                <Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    {posts.length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Posts
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    0
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Followers
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    0
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Following
+                  </Typography>
+                </Box>
+              </Box>
+            </>
+          )}
+        </Box>
         </Card>
 
         {/* POSTS SECTION */}

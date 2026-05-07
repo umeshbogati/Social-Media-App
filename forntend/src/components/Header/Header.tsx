@@ -1,82 +1,78 @@
 import { useAuth } from "../../context/AuthContext";
+import { Link, useLocation } from "react-router-dom";
+import { AppBar, Toolbar, Typography, Button, Box, Avatar } from "@mui/material";
+import HomeIcon from "@mui/icons-material/Home";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 export const Header = () => {
   const { user, logout } = useAuth();
+  const location = useLocation();
 
   return (
-    <header
-      style={{
-        width: "100%",
-        padding: "12px 20px",
-        display: "flex",
-        justifyContent: "center",
-        borderBottom: "1px solid #e5e7eb",
-        background: "#ea1e1e",
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "900px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        {/* LEFT TITLE */}
-        <h2 style={{ margin: 0, fontSize: "18px" }}>Social Media App</h2>
-
-        {/* RIGHT USER */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
+    <AppBar position="sticky" sx={{ background: "#ffffff", color: "#333", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+      <Toolbar sx={{ maxWidth: 900, width: "100%", mx: "auto", display: "flex", justifyContent: "space-between", px: { xs: 1, sm: 2 } }}>
+        <Typography 
+          variant="h6" 
+          fontWeight="bold" 
+          component={Link} 
+          to="/" 
+          sx={{ textDecoration: "none", color: "inherit", display: "flex", alignItems: "center" }}
         >
-          {user && (
-            <>
-              {/* PROFILE IMAGE */}
-              <img
-                src={
-                  user.profilePicture ||
-                  "https://www.gravatar.com/avatar/?d=mphttps://images.unsplash.com/photo-1708024587407-73445142b5a8?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDE3MXx0b3dKWkZza3BHZ3x8ZW58MHx8fHx8"
-                }
-                alt="profile"
-                style={{
-                  width: "35px",
-                  height: "35px",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  border: "1px solid #ddd",
-                }}
-              />
+          <Box sx={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            Social Media
+          </Box>
+        </Typography>
 
-              {/* NAME */}
-              <span style={{ fontWeight: 500 }}>{user.name}</span>
+        {user && (
+          <Box display="flex" alignItems="center" gap={1}>
+            <Button
+              component={Link}
+              to="/"
+              startIcon={<HomeIcon />}
+              sx={{ 
+                textTransform: "none", 
+                fontWeight: "bold",
+                color: location.pathname === "/" ? "#667eea" : "text.secondary",
+                "&:hover": { backgroundColor: "rgba(102, 126, 234, 0.08)" }
+              }}
+            >
+              Home
+            </Button>
+            
+            <Button
+              component={Link}
+              to="/profile"
+              startIcon={
+                <Avatar src={user.profilePicture} sx={{ width: 24, height: 24, fontSize: 12 }}>
+                  {user.name.charAt(0).toUpperCase()}
+                </Avatar>
+              }
+              sx={{ 
+                textTransform: "none", 
+                fontWeight: "bold",
+                color: location.pathname === "/profile" ? "#667eea" : "text.secondary",
+                "&:hover": { backgroundColor: "rgba(102, 126, 234, 0.08)" }
+              }}
+            >
+              Profile
+            </Button>
 
-              {/* LOGOUT */}
-              <button
-                onClick={logout}
-                style={{
-                  padding: "6px 12px",
-                  border: "none",
-                  borderRadius: "6px",
-                  background: "#ef4444",
-                  color: "white",
-                  cursor: "pointer",
-                }}
-              >
-                Logout
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </header>
+            <Button
+              onClick={logout}
+              startIcon={<LogoutIcon />}
+              sx={{ 
+                textTransform: "none", 
+                fontWeight: "bold", 
+                color: "#ef4444",
+                "&:hover": { backgroundColor: "rgba(239, 68, 68, 0.08)" }
+              }}
+            >
+              Logout
+            </Button>
+          </Box>
+        )}
+      </Toolbar>
+    </AppBar>
   );
 };
 

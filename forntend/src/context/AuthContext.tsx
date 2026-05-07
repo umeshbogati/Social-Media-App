@@ -14,7 +14,7 @@ interface User {
   _id: string;
   username: string;
   name: string;
-  email: string;
+  email?: string;
   profilePicture?: string;
   role?: "user" | "admin";
 }
@@ -26,6 +26,7 @@ interface AuthContextType {
   loading: boolean;
   login: (user: User, token: string) => void;
   logout: () => void;
+  updateUser: (user: User) => void;
   isAuthenticated: boolean;
 }
 
@@ -94,6 +95,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     delete API.defaults.headers.common.Authorization;
   };
 
+  /* ================= UPDATE USER ================= */
+
+  const updateUser = (updatedUser: User) => {
+    setUser((prev) => (prev ? { ...prev, ...updatedUser } : updatedUser));
+  };
+
   /* ================= VALUE ================= */
 
   return (
@@ -103,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         login,
         logout,
+        updateUser,
         isAuthenticated: !!user,
       }}
     >
