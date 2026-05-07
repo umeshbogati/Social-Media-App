@@ -10,18 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthLayout } from "../components/Layout";
 import { useAuth } from "../context/AuthContext";
 
-// Types
 
-interface LoginResponse {
-  user: {
-    _id: string;
-    username: string;
-    name: string;
-    email: string;
-    profilePicture?: string;
-  };
-  accessToken: string;
-}
 
 const Login = () => {
   const [email, setEmail] = useState("");

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Box, Paper, Typography, Button } from "@mui/material";
+import { Box, Paper, Typography} from "@mui/material";
 
 interface AuthLayoutProps {
   children: ReactNode;
